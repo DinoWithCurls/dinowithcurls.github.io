@@ -96,10 +96,42 @@
   margin-bottom: 16px;
 }
 
+.deck-hero__caret {
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--accent);
+  animation: deck-caret-blink 1.1s steps(1) infinite;
+}
+
+@keyframes deck-caret-blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
 .deck-hero__name {
   font-size: clamp(2.6rem, 8vw, 5rem);
   letter-spacing: -0.02em;
   margin-bottom: 20px;
+}
+
+.deck-hero__word {
+  display: inline-block;
+}
+
+.deck-hero__word:not(:last-child) {
+  margin-right: 0.25em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-hero__caret {
+    animation: none;
+  }
 }
 
 .deck-hero__tagline {

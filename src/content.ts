@@ -6,7 +6,7 @@
 export const profile = {
   name: 'Aditya Raj Singh',
   tagline:
-    'Full-stack engineer who builds web products end to end — frontend, APIs, and the data layer underneath.',
+    'Full-stack engineer who builds web products end to end - frontend, APIs, and the data layer underneath.',
   location: 'Hyderabad, India',
   email: 'adityarajsingh64@gmail.com',
   github: 'https://github.com/DinoWithCurls',
@@ -15,9 +15,9 @@ export const profile = {
 }
 
 export const about: string[] = [
-  'I build web products end to end — frontend, APIs, and the data layer underneath. Over the last few years I’ve owned features from first commit to production rather than working on isolated slices.',
-  'Alongside shipping core product surfaces on small teams, I do the less visible work that keeps a product healthy — making slow APIs fast, building out notifications and auth, and tightening up security.',
-  'I work steadily and try to leave code that holds up when you look closely — fast, secure, maintainable — over things that just demo well. I’m at my best when there’s room to keep growing technically and take on harder problems over time.',
+  'I build web products end to end - frontend, APIs, and the data layer underneath. Over the last few years I’ve owned features from first commit to production rather than working on isolated slices.',
+  'Alongside shipping core product surfaces on small teams, I do the less visible work that keeps a product healthy - making slow APIs fast, building out notifications and auth, and tightening up security.',
+  'I work steadily and try to leave code that holds up when you look closely - fast, secure, maintainable - over things that just demo well. I’m at my best when there’s room to keep growing technically and take on harder problems over time.',
 ]
 
 export type Experience = {
@@ -38,7 +38,7 @@ export const experience: Experience[] = [
     points: [
       'Shipped core product surfaces end to end: a system of record for backlogs and roadmaps, a survey builder with an embeddable widget flow, feedback-intelligence views, and an AI Copilot.',
       'Rebuilt the search API to bring response times from 30+ seconds to under one, and cut system-of-record API times from 40–50 seconds to under five.',
-      'Built the notifications engine end to end — in-app and email, with cron-batched digests and subscription handling.',
+      'Built the notifications engine end to end - in-app and email, with cron-batched digests and subscription handling.',
       'Developed the frontend connection-and-sync flow for integrations with external issue trackers.',
       'Replaced password login with passwordless magic links, and patched an XSS vulnerability in rendered content.',
       'Onboarded and mentored a new full-stack hire through codebase walkthroughs, PR reviews and task breakdowns.',
@@ -127,7 +127,7 @@ export const projects: Project[] = [
     period: 'Dec 2024 – Mar 2025',
     blurb: 'An AI agent that tailors employee onboarding plans to each new hire.',
     points: [
-      'Generates onboarding plans from individual information — setup, training and knowledge transfer.',
+      'Generates onboarding plans from individual information - setup, training and knowledge transfer.',
       'Standardises and improves the onboarding experience across a team.',
     ],
   },
@@ -158,7 +158,7 @@ export const skills: Record<string, string[]> = {
 }
 
 export const interests: string[] = [
-  'Manga and anime — a long-running habit.',
+  'Manga and anime - a long-running habit.',
   'Multiplayer games with friends.',
   'Following tech reviews and keeping an eye on new web frameworks.',
 ]

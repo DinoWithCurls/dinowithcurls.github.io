@@ -157,6 +157,9 @@ ul {
 }
 
 .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -164,6 +167,13 @@ ul {
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--bg-elevated);
+}
+
+.tag__icon {
+  width: 0.9em;
+  height: 0.9em;
+  flex-shrink: 0;
+  opacity: 0.75;
 }
 
 /* education --------------------------------------------------------- */

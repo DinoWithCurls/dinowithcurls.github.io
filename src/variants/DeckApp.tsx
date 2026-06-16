@@ -17,6 +17,7 @@ import {
   LinkedinIcon,
   MailIcon,
 } from '../components/icons'
+import { Tag } from '../components/Tag'
 
 const panels = [
   { id: 'top', label: 'Intro' },
@@ -37,6 +38,36 @@ const container: Variants = {
 const item: Variants = {
   hidden: { opacity: 0, y: 26 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+}
+
+// hero name: each word rises in on its own, slightly springier than the rest
+const nameContainer: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+}
+
+const nameWord: Variants = {
+  hidden: { opacity: 0, y: 34 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: 'spring', stiffness: 380, damping: 26 },
+  },
+}
+
+/** The hero name, revealed word by word (falls back to plain text when motion is reduced). */
+function HeroName({ name }: { name: string }) {
+  const reduce = useReducedMotion()
+  if (reduce) return <h1 className="deck-hero__name">{name}</h1>
+  return (
+    <motion.h1 className="deck-hero__name" variants={nameContainer} aria-label={name}>
+      {name.split(' ').map((word, i) => (
+        <motion.span className="deck-hero__word" key={`${word}-${i}`} variants={nameWord} aria-hidden>
+          {word}
+        </motion.span>
+      ))}
+    </motion.h1>
+  )
 }
 
 /** A child element that fades + rises in when its panel enters view, and out on leave. */
@@ -134,11 +165,11 @@ export default function DeckApp() {
       <div className="deck" ref={scrollRef}>
         <Panel id="top">
           <Item>
-            <p className="deck-hero__eyebrow">Hi, my name is</p>
+            <p className="deck-hero__eyebrow">
+              Hi, my name is<span className="deck-hero__caret" aria-hidden>_</span>
+            </p>
           </Item>
-          <Item>
-            <h1 className="deck-hero__name">{profile.name}</h1>
-          </Item>
+          <HeroName name={profile.name} />
           <Item>
             <p className="deck-hero__tagline">{profile.tagline}</p>
           </Item>
@@ -189,9 +220,7 @@ export default function DeckApp() {
                     <p className="deck-exp__summary">{job.points[0]}</p>
                     <div className="tags">
                       {job.stack.slice(0, 6).map((s) => (
-                        <span className="tag" key={s}>
-                          {s}
-                        </span>
+                        <Tag name={s} key={s} />
                       ))}
                     </div>
                   </div>
@@ -236,9 +265,7 @@ export default function DeckApp() {
                   {p.stack.length > 0 && (
                     <div className="tags">
                       {p.stack.map((s) => (
-                        <span className="tag" key={s}>
-                          {s}
-                        </span>
+                        <Tag name={s} key={s} />
                       ))}
                     </div>
                   )}
@@ -263,9 +290,7 @@ export default function DeckApp() {
                 <h3>{group}</h3>
                 <div className="tags">
                   {items.map((s) => (
-                    <span className="tag" key={s}>
-                      {s}
-                    </span>
+                    <Tag name={s} key={s} />
                   ))}
                 </div>
               </Item>
