@@ -110,6 +110,18 @@ export type Project = {
 
 export const projects: Project[] = [
   {
+    name: 'TypeDuel',
+    stack: ['TypeScript', 'HTML/CSS', 'Node.js', 'WebSockets'],
+    period: 'May – Jun 2026',
+    blurb: 'A real-time competitive typing game, built in a strict MVC pattern with no frameworks.',
+    points: [
+      'Race a live opponent over WebSockets (create or join a room), or a difficulty-scaled ghost in single player.',
+      'Live WPM, accuracy and error tracking, with match history and a rematch flow.',
+      'Passages fetched server-side from the Wikipedia REST API with a local fallback; client on Vercel, WebSocket server on Render.',
+    ],
+    link: { label: 'type-duel-lovat.vercel.app', href: 'https://type-duel-lovat.vercel.app/' },
+  },
+  {
     name: 'Video Uploader',
     stack: ['React', 'Vite', 'Node.js', 'Express', 'MongoDB'],
     period: 'Dec 2025',
