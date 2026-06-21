@@ -14,8 +14,7 @@ npm run preview  # preview the production build
 
 ## Content
 
-All copy lives in `src/content.ts` (kept in sync with the canonical CV at
-`~/Projects/career/cv.md`). The downloadable CV is `public/aditya-raj-singh-cv.pdf`.
+All copy lives in `src/content.ts`. The downloadable CV is `public/Aditya_Raj_Singh.pdf`.
 
 ## Deploy
 

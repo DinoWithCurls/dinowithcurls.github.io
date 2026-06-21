@@ -11,7 +11,7 @@ export const profile = {
   email: 'adityarajsingh64@gmail.com',
   github: 'https://github.com/DinoWithCurls',
   linkedin: 'https://www.linkedin.com/in/adityarsingh-314159/',
-  resume: '/aditya-raj-singh-cv.pdf',
+  resume: '/Aditya_Raj_Singh.pdf',
 }
 
 export const about: string[] = [
