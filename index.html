@@ -6,15 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Aditya Raj Singh — full-stack engineer building web products end to end with React, TypeScript and Node."
+      content="Aditya Raj Singh, full-stack engineer in Hyderabad, India. Work, projects and contact."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <title>Aditya Raj Singh — Full-Stack Engineer</title>
+    <script>
+      // set before first paint so reduced-motion styles apply from the start
+      document.documentElement.dataset.motion = matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'reduce'
+        : 'full'
+    </script>
   </head>
   <body>
     <div id="root"></div>

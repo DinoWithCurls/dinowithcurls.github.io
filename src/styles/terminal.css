@@ -1,0 +1,1032 @@
+/* Terminal desktop (src/terminal/): a tiling WM of terminal windows, Gruvbox dark. */
+
+.term {
+  --t-wall: #151718;
+  --t-win: #1d2021;
+  --t-float: #202324;
+  --t-line: #3c3836;
+  --t-line-strong: #504945;
+  --t-fg: #ebdbb2;
+  --t-dim: #a89984;
+  --t-faint: #7c6f64;
+  --t-yellow: #fabd2f;
+  --t-orange: #fe8019;
+  --t-green: #b8bb26;
+  --t-aqua: #8ec07c;
+  --t-blue: #83a598;
+  --t-purple: #d3869b;
+  --t-red: #fb4934;
+  --t-gap: 10px;
+
+  /* the document scrolls (only when the windows stack); no inner scroller, so the page is one
+     paint layer and comes back in one piece when you return to the tab */
+  min-height: 100dvh;
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
+  background: var(--t-wall);
+  color: var(--t-fg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.term button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.t-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* status bar ------------------------------------------------------------------------ */
+.tbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex: none;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  height: 30px;
+  white-space: nowrap;
+  padding: 0 14px;
+  background: #111314;
+  border-bottom: 1px solid var(--t-line);
+  font-size: 12px;
+  color: var(--t-dim);
+}
+
+.tbar__host {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* the focused window's title, like waybar's hyprland/window module */
+.tbar__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--t-fg);
+}
+
+.tbar__clock {
+  justify-self: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--t-fg);
+}
+
+.tbar__links {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+.tbar__keys {
+  color: var(--t-faint);
+}
+
+.tbar__links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--t-fg);
+}
+
+.tbar__links a:hover {
+  color: var(--t-yellow);
+}
+
+.tbar__links svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* the tiled desktop ---------------------------------------------------------------------- */
+.tdesk {
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: var(--t-gap) 14px 14px;
+  display: grid;
+  /* fine columns so a dragged gap moves smoothly; each window's row, span and left gap come
+     from the tiling state in TerminalHome */
+  grid-template-columns: repeat(240, minmax(0, 1fr));
+  grid-template-rows: auto auto auto;
+  column-gap: 0;
+  row-gap: var(--t-gap);
+  align-content: center;
+}
+
+/* windows ------------------------------------------------------------------------------- */
+.tw {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  /* each window knows its own width, so its text can adapt when it is resized narrow */
+  container-type: inline-size;
+  padding: 22px 16px 14px;
+  outline: none;
+}
+
+.tw--opens {
+  cursor: pointer;
+}
+
+.tw__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 2px solid var(--t-line);
+  background: var(--t-win);
+}
+
+/* Hyprland's active border: a gradient on the focused window */
+.tw.is-active .tw__bg,
+.tw:focus-visible .tw__bg,
+.tf__bg {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--t-win), var(--t-win)) padding-box,
+    linear-gradient(45deg, var(--t-yellow), var(--t-orange)) border-box;
+}
+
+.tf__bg {
+  background:
+    linear-gradient(var(--t-float), var(--t-float)) padding-box,
+    linear-gradient(45deg, var(--t-yellow), var(--t-orange)) border-box;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+/* the title bar strip: drag it onto another window to swap the two */
+.tw__grab {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 26px;
+  cursor: grab;
+}
+
+/* the gap on a window's left: drag to trade width with the neighbour, double-click to even out */
+.tw__resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--t-gap));
+  width: var(--t-gap);
+  z-index: 3;
+  cursor: col-resize;
+}
+
+.tw__resize::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  bottom: 20%;
+  left: calc(50% - 1px);
+  width: 2px;
+  border-radius: 2px;
+  background: var(--t-yellow);
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
+}
+
+.tw__resize:hover::after,
+.tw__resize:active::after {
+  opacity: 0.8;
+}
+
+/* the window being dragged (and while it flies home) rides above the others */
+.tw.is-lifted {
+  z-index: 30;
+}
+
+.tw.is-lifted .tw__bg {
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+}
+
+.tw.is-lifted .tw__grab {
+  cursor: grabbing;
+}
+
+/* where the dragged window will land: its own slot, drawn under it */
+.tw__slot {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border: 2px dashed var(--t-yellow);
+  background: rgba(250, 189, 47, 0.04);
+  pointer-events: none;
+}
+
+/* the pane title sits on the top border, like tmux/zellij */
+.tw__title {
+  pointer-events: none;
+  position: absolute;
+  top: -1px;
+  left: 14px;
+  margin: 0;
+  padding: 0 6px;
+  transform: translateY(-50%);
+  background: var(--t-wall);
+  color: var(--t-dim);
+  font-size: 11.5px;
+  line-height: 1.4;
+  border-radius: 3px;
+}
+
+.tw.is-active .tw__title,
+.tw:focus-visible .tw__title {
+  color: var(--t-yellow);
+}
+
+.tw__hint {
+  pointer-events: none;
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  font-size: 11px;
+  color: var(--t-faint);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+.tw.is-active .tw__hint,
+.tw:focus-visible .tw__hint {
+  opacity: 1;
+}
+
+.tw__body {
+  min-width: 0;
+}
+
+/* text ------------------------------------------------------------------------------------- */
+.t-l {
+  margin: 0;
+}
+
+.term p {
+  margin: 0;
+}
+
+.t-cmdline {
+  color: var(--t-fg);
+  /* long commands wrap, like a terminal, rather than being cut off */
+  overflow-wrap: anywhere;
+}
+
+.t-out {
+  margin-bottom: 8px;
+}
+
+.t-prompt .t-cwd {
+  color: var(--t-blue);
+}
+
+.t-prompt .t-arrow {
+  color: var(--t-green);
+}
+
+.t-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--t-fg);
+  animation: t-blink 1s steps(1) infinite;
+}
+
+@keyframes t-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.t-dim {
+  color: var(--t-dim);
+}
+
+.t-date {
+  white-space: nowrap;
+}
+
+.t-key {
+  color: var(--t-yellow);
+}
+
+.t-accent {
+  color: var(--t-orange);
+}
+
+.t-dir {
+  color: var(--t-blue);
+  font-weight: 500;
+}
+
+button.t-dir:hover {
+  text-decoration: underline;
+}
+
+.t-name {
+  font-size: clamp(1.4rem, 6.5cqi, 2rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 2px 0 2px;
+}
+
+.t-link {
+  color: var(--t-aqua) !important;
+}
+
+.t-link:hover {
+  text-decoration: underline;
+}
+
+/* kitty: the first window scrolls inside itself, so typing never resizes the desktop */
+.w-kitty {
+  min-height: 300px;
+}
+
+.kitty {
+  position: absolute;
+  inset: 22px 16px 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--t-line-strong) transparent;
+}
+
+.t-built {
+  display: grid !important;
+  grid-template-columns: 11ch 1fr auto;
+  gap: 12px;
+  width: 100%;
+  padding: 1px 6px !important;
+  margin: 0 -6px;
+  border-radius: 4px;
+}
+
+/* a narrow kitty drops the "where" column rather than squeezing the description */
+@container (max-width: 520px) {
+  .t-built {
+    grid-template-columns: 10ch 1fr;
+  }
+
+  .t-built > :last-child {
+    display: none;
+  }
+}
+
+.t-built:hover,
+.t-built:focus-visible {
+  background: #282828 !important;
+  outline: none;
+}
+
+.t-form {
+  display: flex;
+  align-items: center;
+}
+
+.t-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--t-fg);
+  font: inherit;
+  caret-color: var(--t-yellow);
+  padding: 0;
+}
+
+.t-input::placeholder {
+  color: var(--t-faint);
+}
+
+.t-entry {
+  margin-bottom: 6px;
+}
+
+.t-help__row {
+  display: grid;
+  grid-template-columns: 13ch 1fr;
+  gap: 8px;
+}
+
+.t-input {
+  margin-left: 0.2ch;
+}
+
+/* fastfetch ------------------------------------------------------------------------------ */
+.ff-head {
+  font-weight: 500;
+}
+
+.ff-row {
+  display: grid;
+  grid-template-columns: 10ch 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.ff-key {
+  color: var(--t-yellow);
+}
+
+.ff-vals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+
+.ff-colors {
+  display: flex;
+  margin-top: 8px;
+}
+
+.ff-c {
+  width: 22px;
+  height: 12px;
+}
+
+.ff-c0 {
+  background: #282828;
+}
+.ff-c1 {
+  background: var(--t-red);
+}
+.ff-c2 {
+  background: var(--t-green);
+}
+.ff-c3 {
+  background: var(--t-yellow);
+}
+.ff-c4 {
+  background: var(--t-blue);
+}
+.ff-c5 {
+  background: var(--t-purple);
+}
+.ff-c6 {
+  background: var(--t-aqua);
+}
+.ff-c7 {
+  background: var(--t-fg);
+}
+
+.ff-note {
+  margin-top: 6px !important;
+  font-size: 11.5px;
+}
+
+/* tags read as plain terminal words with a glyph, not boxes */
+.term .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 6px;
+}
+
+.term .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--t-fg);
+}
+
+.term .tag__icon {
+  width: 0.9em;
+  height: 0.9em;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+/* "where I used it" shows above a tool on hover */
+.term .tag--usage {
+  position: relative;
+  cursor: default;
+  text-decoration: underline dotted var(--t-faint);
+  text-underline-offset: 3px;
+}
+
+.term .tag--usage:hover {
+  color: var(--t-yellow);
+}
+
+.term .tag--usage::after {
+  content: attr(data-usage);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 5;
+  padding: 3px 8px;
+  border: 1px solid var(--t-line-strong);
+  border-radius: 4px;
+  background: #111314;
+  color: var(--t-fg);
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.18s var(--ease),
+    transform 0.18s var(--ease);
+}
+
+.term .tag--usage:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ~/work --------------------------------------------------------------------------------- */
+.t-row {
+  position: relative;
+  isolation: isolate;
+  display: grid !important;
+  width: calc(100% + 12px);
+  margin: 0 -6px;
+  padding: 3px 6px !important;
+}
+
+.t-row__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: transparent;
+}
+
+.t-row:hover .t-row__bg,
+.t-row:focus-visible .t-row__bg {
+  background: #282828;
+}
+
+.t-row:focus-visible {
+  outline: none;
+}
+
+.t-row__top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 12px;
+}
+
+.t-row__role {
+  color: var(--t-dim);
+}
+
+/* project windows ------------------------------------------------------------------------- */
+.t-head {
+  margin-bottom: 8px;
+}
+
+.t-h {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  column-gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--t-orange);
+}
+
+.t-h .t-date {
+  font-size: 11.5px;
+  font-weight: 400;
+}
+
+.t-sub {
+  color: var(--t-fg);
+  opacity: 0.85;
+}
+
+/* Workouter: a replayed agent run (src/components/WorkouterDemo.tsx) */
+.wd {
+  container-type: inline-size;
+}
+
+.wd-meter {
+  display: flex;
+  align-items: center;
+  gap: 1ch;
+  white-space: nowrap;
+}
+
+/* the budget bar: segmented like block characters, and it takes whatever width is left */
+.wd-bar {
+  position: relative;
+  flex: 1;
+  min-width: 6ch;
+  max-width: 22ch;
+  height: 0.8em;
+  background: repeating-linear-gradient(90deg, var(--t-line-strong) 0 5px, transparent 5px 7px);
+}
+
+.wd-bar__on {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: repeating-linear-gradient(90deg, var(--t-aqua) 0 5px, transparent 5px 7px);
+  transition: width 0.12s linear;
+}
+
+/* very narrow window: drop the request label before anything else */
+@container (max-width: 330px) {
+  .wd-req {
+    display: none;
+  }
+}
+
+/* a fixed-height terminal viewport: new lines arrive at the bottom, old ones scroll off the top */
+.wd-screen {
+  height: calc(8 * 1.55em);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.wd-screen.is-scrolled {
+  mask-image: linear-gradient(to bottom, transparent, #000 1.8em);
+}
+
+.wd-title {
+  color: var(--t-faint);
+}
+
+.wd-call {
+  color: var(--t-fg);
+}
+
+.wd-warn {
+  color: var(--t-yellow);
+}
+
+.wd-ok {
+  color: var(--t-green);
+}
+
+.wd-spin {
+  color: var(--t-aqua);
+}
+
+/* the plan: a grid, so names can wrap while sets / reps / kg always stay visible */
+.wd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5ch 6ch 4ch;
+  column-gap: 1ch;
+}
+
+.wd-head {
+  margin-top: 2px !important;
+  color: var(--t-orange);
+}
+
+/* TypeDuel: a replayed live race, or race the ghost (src/components/TypeDuelDemo.tsx) */
+.td {
+  position: relative;
+}
+
+.td-live {
+  color: var(--t-green);
+}
+
+.td-lane {
+  display: flex;
+  align-items: center;
+  gap: 1ch;
+  white-space: nowrap;
+}
+
+.td-who {
+  flex: none;
+  width: 5ch;
+  color: var(--t-dim);
+}
+
+/* a lane: segmented like block characters, taking whatever width is left */
+.td-bar {
+  position: relative;
+  flex: 1;
+  min-width: 6ch;
+  max-width: 20ch;
+  height: 0.8em;
+  background: repeating-linear-gradient(90deg, var(--t-line-strong) 0 5px, transparent 5px 7px);
+}
+
+.td-bar__on {
+  position: absolute;
+  inset: 0 auto 0 0;
+  transition: width 0.1s linear;
+}
+
+.td-bar--you {
+  background: repeating-linear-gradient(90deg, var(--t-yellow) 0 5px, transparent 5px 7px);
+}
+
+.td-bar--opp {
+  background: repeating-linear-gradient(90deg, var(--t-blue) 0 5px, transparent 5px 7px);
+}
+
+.td-wpm {
+  flex: none;
+}
+
+.td-text {
+  margin: 4px 0 2px !important;
+  color: var(--t-faint);
+}
+
+.td-text > span {
+  position: relative;
+}
+
+.td-text .is-ok {
+  color: var(--t-fg);
+}
+
+.td-text .is-bad {
+  color: var(--t-red);
+  background: rgba(251, 73, 52, 0.12);
+}
+
+/* the other player's position: an underline in their colour */
+.td-text .is-opp {
+  box-shadow: inset 0 -2px 0 var(--t-blue);
+}
+
+.td-caret {
+  position: absolute;
+  left: -1px;
+  top: 0.1em;
+  bottom: 0.1em;
+  border-left: 2px solid var(--t-yellow);
+  animation: t-blink 1s steps(1) infinite;
+}
+
+.td-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  min-height: 1.55em;
+}
+
+.td-play {
+  font-size: 12px;
+}
+
+/* the input that receives your typing: focusable, invisible */
+.td-input {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+}
+
+/* contact -------------------------------------------------------------------------------- */
+.t-contact {
+  overflow-wrap: anywhere;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px !important;
+}
+
+.t-btn,
+.term button.t-btn {
+  color: #1d2021;
+  background: var(--t-yellow);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.t-btn:hover,
+.term button.t-btn:hover {
+  background: var(--t-orange);
+}
+
+/* floating window -------------------------------------------------------------------------- */
+.tf {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.tf__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 11, 12, 0.6);
+}
+
+.tf__win {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(86dvh, 820px);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--t-fg);
+}
+
+.tf__win .tw__title {
+  color: var(--t-yellow);
+  background: var(--t-wall);
+}
+
+.tf__close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  color: var(--t-dim) !important;
+}
+
+.tf__close:hover,
+.tf__close:focus-visible {
+  color: var(--t-red) !important;
+  outline: none;
+}
+
+.tf__body {
+  position: relative;
+  overflow-y: auto;
+  padding: 30px 28px 24px;
+}
+
+.f-h1 {
+  color: var(--t-orange);
+  font-weight: 500;
+  font-size: 1.15em;
+  margin-bottom: 4px !important;
+  padding-right: 40px;
+}
+
+.f-h2 {
+  color: var(--t-yellow);
+  margin-top: 16px !important;
+  margin-bottom: 4px !important;
+}
+
+.f-p {
+  color: var(--t-fg);
+  margin-bottom: 8px !important;
+}
+
+.f-built {
+  margin-bottom: 8px !important;
+}
+
+.f-built__text {
+  display: block;
+  color: var(--t-dim);
+}
+
+.f-points {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.f-points li {
+  position: relative;
+  padding-left: 2ch;
+}
+
+.f-points li::before {
+  content: '-';
+  position: absolute;
+  left: 0;
+  color: var(--t-yellow);
+}
+
+/* shorter laptop screens: same tiles, tighter text */
+@media (min-width: 1001px) and (max-height: 860px) {
+  .term {
+    font-size: 12px;
+  }
+
+  .t-name {
+    font-size: clamp(1.3rem, 6cqi, 1.7rem);
+  }
+
+  .w-kitty {
+    min-height: 262px;
+  }
+
+  .tw {
+    padding: 18px 14px 10px;
+  }
+
+  .kitty {
+    inset: 18px 14px 10px;
+  }
+}
+
+/* smaller screens: windows stack and the page scrolls */
+@media (max-width: 1000px), (max-height: 640px) {
+  .tdesk {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    gap: 14px;
+    padding-top: 16px;
+  }
+
+  .tw {
+    grid-row: auto !important;
+    grid-column: 1 / -1 !important;
+    margin-left: 0 !important;
+  }
+
+  /* the first window grows with its text here, and scrolls once it gets long */
+  .w-kitty {
+    min-height: 0;
+  }
+  .kitty {
+    position: static;
+    max-height: 420px;
+  }
+}
+
+/* the key hint only shows where the bar has room for it */
+@media (max-width: 1239px) {
+  .tbar__keys {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .tbar {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    height: auto;
+    padding: 6px 12px;
+  }
+
+  .tbar__host,
+  .tbar__clock {
+    display: none;
+  }
+
+  .tdesk {
+    padding: 16px 10px;
+  }
+
+  .t-name {
+    font-size: 1.5rem;
+  }
+
+  .t-built {
+    grid-template-columns: 10ch 1fr;
+  }
+
+  .t-built > :last-child {
+    display: none;
+  }
+
+  .tw__hint {
+    display: none;
+  }
+
+  .tf {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .tf__body {
+    padding: 26px 16px 20px;
+  }
+}

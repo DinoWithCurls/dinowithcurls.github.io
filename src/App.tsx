@@ -1,14 +1,10 @@
-import { useEffect } from 'react'
-import DeckApp from './variants/DeckApp'
+import TerminalHome from './terminal/TerminalHome'
+import { MotionProvider } from './motion/MotionProvider'
 
 export default function App() {
-  // The deck owns its own scroll container, so the page body must not scroll.
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [])
-
-  return <DeckApp />
+  return (
+    <MotionProvider>
+      <TerminalHome />
+    </MotionProvider>
+  )
 }
