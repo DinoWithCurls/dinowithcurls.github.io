@@ -8,14 +8,23 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react'
-import { experience, profile, projects, toolGroups } from '../content'
+import { built, experience, profile, projects, toolGroups } from '../content'
 import { Prompt } from './print'
 import { slug } from './shared'
 
 // the shell in the first window
 
+// Every command the windows show on screen works when typed: whoami, cat, ls, fastfetch,
+// workouter, typeduel. The "files" are the ones ls lists.
+const FILES = ['about.md', 'built.md', 'contact']
+const DIRS = ['work', 'projects']
+
 const COMMANDS = [
   'help',
+  'cat',
+  'fastfetch',
+  'workouter',
+  'typeduel',
   'about',
   'work',
   'projects',
@@ -71,6 +80,82 @@ export function Shell({
     return <p className="t-dim">opening {label}</p>
   }
 
+  const work = () => (
+    <div>
+      {experience.map((e) => (
+        <p key={e.company}>
+          <button className="t-dir" onClick={() => onOpen(`role:${e.company}`)}>
+            {slug(e.company)}/
+          </button>{' '}
+          {e.role} <span className="t-dim t-date">{e.period}</span>
+        </p>
+      ))}
+    </div>
+  )
+  const projectList = () => (
+    <div>
+      {projects.map((p) => (
+        <p key={p.name}>
+          <button className="t-dir" onClick={() => onOpen(`project:${p.name}`)}>
+            {slug(p.name)}/
+          </button>{' '}
+          <span className="t-dim">{p.stack.slice(0, 3).join(', ')}</span>
+        </p>
+      ))}
+    </div>
+  )
+  const skills = () => (
+    <div>
+      {toolGroups.map((g) => (
+        <p key={g.key}>
+          <span className="t-key">{g.key}</span> {g.tools.join(', ')}
+        </p>
+      ))}
+    </div>
+  )
+
+  /** `cat`: the files ls lists, plus a role's page (work/pulsegen.md) */
+  const cat = (arg: string) => {
+    const file = arg.replace(/^(~\/|\.\/)/, '')
+    if (!file) return <p className="t-dim">cat: which file? try: cat about.md</p>
+    if (file === 'about.md') return opener('about', 'about.md')
+    if (file === 'built.md')
+      return (
+        <div>
+          {built.map((b) => (
+            <p key={b.key}>
+              <span className="t-key">{b.key}</span> {b.short} <span className="t-dim">· {b.where}</span>
+            </p>
+          ))}
+        </div>
+      )
+    if (file === 'contact')
+      return (
+        <div>
+          <p>Open to mid-level full-stack roles. Email is fastest.</p>
+          <p className="t-dim">{profile.email}</p>
+        </div>
+      )
+    const role = file.match(/^work\/(\w+)(\.md)?$/)?.[1]
+    const id = role && TARGETS[role]
+    if (id) return opener(id, file)
+    return <p className="t-dim">cat: {arg}: No such file or directory</p>
+  }
+
+  /** `ls`: home, ~/work or ~/projects */
+  const ls = (arg: string) => {
+    const dir = arg.replace(/^~\/?|^\.\/?/, '').replace(/\/$/, '')
+    if (!dir)
+      return (
+        <p>
+          <span className="t-dir">work/</span> <span className="t-dir">projects/</span> {FILES.join(' ')}
+        </p>
+      )
+    if (dir === 'work') return work()
+    if (dir === 'projects') return projectList()
+    return <p className="t-dim">ls: cannot access '{arg}': No such file or directory</p>
+  }
+
   const exec = (raw: string): ReactNode | 'clear' => {
     const [name = '', ...args] = raw.trim().split(/\s+/)
     const arg = args.join(' ').toLowerCase()
@@ -85,6 +170,8 @@ export function Shell({
               ['work', 'where I’ve worked'],
               ['projects', 'things I’ve built on my own'],
               ['skills', 'tools I use'],
+              ['cat <file>', 'read a file: about.md, built.md, contact'],
+              ['ls [dir]', 'list files, or ~/work, ~/projects'],
               ['open <name>', 'open a window, e.g. open workouter'],
               ['reset', 'put the windows back where they were'],
               ['clear', 'clear the screen'],
@@ -109,47 +196,20 @@ export function Shell({
       case 'whoami':
         return <p>{profile.name}</p>
       case 'work':
-        return (
-          <div>
-            {experience.map((e) => (
-              <p key={e.company}>
-                <button className="t-dir" onClick={() => onOpen(`role:${e.company}`)}>
-                  {slug(e.company)}/
-                </button>{' '}
-                {e.role} <span className="t-dim t-date">{e.period}</span>
-              </p>
-            ))}
-          </div>
-        )
+        return work()
       case 'projects':
-        return (
-          <div>
-            {projects.map((p) => (
-              <p key={p.name}>
-                <button className="t-dir" onClick={() => onOpen(`project:${p.name}`)}>
-                  {slug(p.name)}/
-                </button>{' '}
-                <span className="t-dim">{p.stack.slice(0, 3).join(', ')}</span>
-              </p>
-            ))}
-          </div>
-        )
+        return projectList()
       case 'skills':
-        return (
-          <div>
-            {toolGroups.map((g) => (
-              <p key={g.key}>
-                <span className="t-key">{g.key}</span> {g.tools.join(', ')}
-              </p>
-            ))}
-          </div>
-        )
+      case 'fastfetch':
+        return skills()
+      case 'cat':
+        return cat(arg)
       case 'ls':
-        return (
-          <p>
-            <span className="t-dir">work/</span> <span className="t-dir">projects/</span> about.md built.md
-          </p>
-        )
+        return ls(arg)
+      case 'workouter':
+        return opener('project:Workouter', 'workouter')
+      case 'typeduel':
+        return opener('project:TypeDuel', 'typeduel')
       case 'pwd':
         return <p>/home/aditya</p>
       case 'date':
@@ -206,7 +266,17 @@ export function Shell({
     if (e.key === 'Tab') {
       e.preventDefault()
       const parts = value.split(/\s+/)
-      const pool = parts.length > 1 && parts[0] === 'open' ? Object.keys(TARGETS) : COMMANDS
+      const first = parts[0].toLowerCase()
+      const pool =
+        parts.length === 1
+          ? COMMANDS
+          : first === 'open'
+            ? Object.keys(TARGETS)
+            : first === 'cat'
+              ? FILES
+              : first === 'ls'
+                ? DIRS.map((d) => `~/${d}`)
+                : []
       const last = parts[parts.length - 1].toLowerCase()
       const hits = pool.filter((c) => c.startsWith(last))
       if (hits.length === 1) setValue([...parts.slice(0, -1), hits[0]].join(' ') + ' ')

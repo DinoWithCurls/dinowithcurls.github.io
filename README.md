@@ -20,8 +20,11 @@ GitHub Actions.
 - **Keyboard:** hjkl or the arrow keys move focus between windows, shift + hjkl swaps the
   focused window with its neighbour, Enter opens it, and `/` jumps to the prompt.
 - **The bar** shows the title of the window in focus, the time in Hyderabad, and links.
-- **Shell:** type `help`. It knows `about`, `work`, `projects`, `skills`, `open <name>`, `cv`,
-  `reset`, `email`, `github`, `linkedin` and `clear`, with Tab completion and history on ↑.
+- **Shell:** type `help`. Every command the windows show works when typed (`whoami`,
+  `cat about.md`, `cat built.md`, `cat contact`, `ls ~/work`, `fastfetch`, `workouter …`,
+  `typeduel …`), plus `about`, `work`, `projects`, `skills`, `open <name>`, `cv`, `reset`,
+  `email`, `github`, `linkedin` and `clear`. Tab completes commands, files and folders; ↑
+  brings back history.
 - **TypeDuel:** press `[ race the ghost ]` and type the passage. Esc goes back.
 
 Nothing is saved. A reload puts every window back.
@@ -131,8 +134,9 @@ for the web font, so it never starts with the fallback font's letter widths.
 
 ### The shell (`Shell.tsx`)
 
-A small command table. Commands print output into the first window, open floating windows,
-open the CV, or reset the layout. The window scrolls inside itself, so typing never changes
+A small command table over a pretend home folder (`work/`, `projects/`, `about.md`, `built.md`,
+`contact`), so every command a window shows on screen also works when typed. Commands print
+output into the first window, open floating windows, open the CV, or reset the layout. The window scrolls inside itself, so typing never changes
 the size of the desktop.
 
 ### The bar (`Bar.tsx`)
