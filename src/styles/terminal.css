@@ -1,0 +1,843 @@
+/* Terminal desktop (src/variants/TerminalHome.tsx): a tiling WM of terminal windows, Gruvbox dark. */
+
+.term {
+  --t-wall: #151718;
+  --t-win: #1d2021;
+  --t-float: #202324;
+  --t-line: #3c3836;
+  --t-line-strong: #504945;
+  --t-fg: #ebdbb2;
+  --t-dim: #a89984;
+  --t-faint: #7c6f64;
+  --t-yellow: #fabd2f;
+  --t-orange: #fe8019;
+  --t-green: #b8bb26;
+  --t-aqua: #8ec07c;
+  --t-blue: #83a598;
+  --t-purple: #d3869b;
+  --t-red: #fb4934;
+  --t-gap: 10px;
+
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--t-wall);
+  color: var(--t-fg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.term button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.t-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* status bar ------------------------------------------------------------------------ */
+.tbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+  height: 30px;
+  padding: 0 14px;
+  background: #111314;
+  border-bottom: 1px solid var(--t-line);
+  font-size: 12px;
+  color: var(--t-dim);
+}
+
+.tbar__host {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tbar__ws {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 18px;
+  border-radius: 4px;
+  background: var(--t-yellow);
+  color: #1d2021;
+  font-weight: 500;
+}
+
+.tbar__clock {
+  color: var(--t-fg);
+}
+
+.tbar__links {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+}
+
+.tbar__keys {
+  color: var(--t-faint);
+}
+
+.tbar__links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--t-fg);
+}
+
+.tbar__links a:hover {
+  color: var(--t-yellow);
+}
+
+.tbar__links svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* the tiled desktop ---------------------------------------------------------------------- */
+.tdesk {
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: var(--t-gap) 14px 14px;
+  display: grid;
+  gap: var(--t-gap);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: auto auto auto;
+  align-content: center;
+}
+
+.w-kitty { grid-column: 1 / 8; grid-row: 1; }
+.w-ff { grid-column: 8 / 13; grid-row: 1; }
+.w-work { grid-column: 1 / 5; grid-row: 2; }
+.w-workouter { grid-column: 5 / 9; grid-row: 2; }
+.w-typeduel { grid-column: 9 / 13; grid-row: 2; }
+.w-rore { grid-column: 1 / 7; grid-row: 3; }
+.w-contact { grid-column: 7 / 13; grid-row: 3; }
+
+/* windows ------------------------------------------------------------------------------- */
+.tw {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  padding: 22px 16px 14px;
+  outline: none;
+}
+
+.tw--opens {
+  cursor: pointer;
+}
+
+.tw__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 2px solid var(--t-line);
+  background: var(--t-win);
+}
+
+/* Hyprland's active border: a gradient on the focused window */
+.tw.is-active .tw__bg,
+.tw:focus-visible .tw__bg,
+.tf__bg {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--t-win), var(--t-win)) padding-box,
+    linear-gradient(45deg, var(--t-yellow), var(--t-orange)) border-box;
+}
+
+.tf__bg {
+  background:
+    linear-gradient(var(--t-float), var(--t-float)) padding-box,
+    linear-gradient(45deg, var(--t-yellow), var(--t-orange)) border-box;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+/* the pane title sits on the top border, like tmux/zellij */
+.tw__title {
+  position: absolute;
+  top: -1px;
+  left: 14px;
+  margin: 0;
+  padding: 0 6px;
+  transform: translateY(-50%);
+  background: var(--t-wall);
+  color: var(--t-dim);
+  font-size: 11.5px;
+  line-height: 1.4;
+  border-radius: 3px;
+}
+
+.tw.is-active .tw__title,
+.tw:focus-visible .tw__title {
+  color: var(--t-yellow);
+}
+
+.tw__hint {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  font-size: 11px;
+  color: var(--t-faint);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+.tw.is-active .tw__hint,
+.tw:focus-visible .tw__hint {
+  opacity: 1;
+}
+
+.tw__body {
+  min-width: 0;
+}
+
+/* text ------------------------------------------------------------------------------------- */
+.t-l {
+  margin: 0;
+}
+
+.term p {
+  margin: 0;
+}
+
+.t-cmdline {
+  color: var(--t-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.t-out {
+  margin-bottom: 8px;
+}
+
+.t-prompt .t-cwd {
+  color: var(--t-blue);
+}
+
+.t-prompt .t-arrow {
+  color: var(--t-green);
+}
+
+.t-cursor {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.15em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--t-fg);
+  animation: t-blink 1s steps(1) infinite;
+}
+
+@keyframes t-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.t-dim {
+  color: var(--t-dim);
+}
+
+.t-date {
+  white-space: nowrap;
+}
+
+.t-key {
+  color: var(--t-yellow);
+}
+
+.t-accent {
+  color: var(--t-orange);
+}
+
+.t-dir {
+  color: var(--t-blue);
+  font-weight: 500;
+}
+
+button.t-dir:hover {
+  text-decoration: underline;
+}
+
+.t-name {
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin: 2px 0 2px;
+}
+
+.t-link {
+  color: var(--t-aqua) !important;
+}
+
+.t-link:hover {
+  text-decoration: underline;
+}
+
+/* kitty: the first window scrolls inside itself, so typing never resizes the desktop */
+.w-kitty {
+  min-height: 300px;
+}
+
+.kitty {
+  position: absolute;
+  inset: 22px 16px 12px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--t-line-strong) transparent;
+}
+
+.t-built {
+  display: grid !important;
+  grid-template-columns: 11ch 1fr auto;
+  gap: 12px;
+  width: 100%;
+  padding: 1px 6px !important;
+  margin: 0 -6px;
+  border-radius: 4px;
+}
+
+.t-built:hover,
+.t-built:focus-visible {
+  background: #282828 !important;
+  outline: none;
+}
+
+.t-form {
+  display: flex;
+  align-items: center;
+}
+
+.t-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--t-fg);
+  font: inherit;
+  caret-color: var(--t-yellow);
+  padding: 0;
+}
+
+.t-input::placeholder {
+  color: var(--t-faint);
+}
+
+.t-entry {
+  margin-bottom: 6px;
+}
+
+.t-help__row {
+  display: grid;
+  grid-template-columns: 13ch 1fr;
+  gap: 8px;
+}
+
+.t-input {
+  margin-left: 0.2ch;
+}
+
+/* fastfetch ------------------------------------------------------------------------------ */
+.ff-head {
+  font-weight: 500;
+}
+
+.ff-row {
+  display: grid;
+  grid-template-columns: 10ch 1fr;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.ff-key {
+  color: var(--t-yellow);
+}
+
+.ff-vals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+
+.ff-colors {
+  display: flex;
+  margin-top: 8px;
+}
+
+.ff-c {
+  width: 22px;
+  height: 12px;
+}
+
+.ff-c0 { background: #282828; }
+.ff-c1 { background: var(--t-red); }
+.ff-c2 { background: var(--t-green); }
+.ff-c3 { background: var(--t-yellow); }
+.ff-c4 { background: var(--t-blue); }
+.ff-c5 { background: var(--t-purple); }
+.ff-c6 { background: var(--t-aqua); }
+.ff-c7 { background: var(--t-fg); }
+
+.ff-note {
+  margin-top: 6px !important;
+  font-size: 11.5px;
+}
+
+/* tags read as plain terminal words with a glyph, not boxes */
+.term .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 6px;
+}
+
+.term .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--t-fg);
+}
+
+.term .tag__icon {
+  width: 0.9em;
+  height: 0.9em;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+/* "where I used it" shows above a tool on hover */
+.term .tag--usage {
+  position: relative;
+  cursor: help;
+  text-decoration: underline dotted var(--t-faint);
+  text-underline-offset: 3px;
+}
+
+.term .tag--usage:hover {
+  color: var(--t-yellow);
+}
+
+.term .tag--usage::after {
+  content: attr(data-usage);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 5;
+  padding: 3px 8px;
+  border: 1px solid var(--t-line-strong);
+  border-radius: 4px;
+  background: #111314;
+  color: var(--t-fg);
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.18s var(--ease),
+    transform 0.18s var(--ease);
+}
+
+.term .tag--usage:hover::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ~/work --------------------------------------------------------------------------------- */
+.t-row {
+  position: relative;
+  isolation: isolate;
+  display: grid !important;
+  width: calc(100% + 12px);
+  margin: 0 -6px;
+  padding: 3px 6px !important;
+}
+
+.t-row__bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: transparent;
+}
+
+.t-row:hover .t-row__bg,
+.t-row:focus-visible .t-row__bg {
+  background: #282828;
+}
+
+.t-row:focus-visible {
+  outline: none;
+}
+
+.t-row__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.t-row__role {
+  color: var(--t-dim);
+}
+
+/* project windows ------------------------------------------------------------------------- */
+.t-head {
+  margin-bottom: 8px;
+}
+
+.t-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--t-orange);
+}
+
+.t-h .t-date {
+  font-size: 11.5px;
+  font-weight: 400;
+}
+
+.t-sub {
+  color: var(--t-fg);
+  opacity: 0.85;
+}
+
+/* the agent log and race, printed straight into the terminal */
+.term .inset__title {
+  color: var(--t-faint);
+  margin-bottom: 2px;
+}
+
+.term .inset__title::before {
+  content: '# ';
+}
+
+.term .inset__caption {
+  color: var(--t-dim);
+}
+
+.term .log__lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+}
+
+.term .log__line {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 6px;
+  color: var(--t-fg);
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity 0.3s var(--ease),
+    transform 0.3s var(--ease);
+}
+
+.term .log__line.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+.term .log__mark {
+  color: var(--t-faint);
+}
+
+.term .log__line--warn,
+.term .log__line--warn .log__mark {
+  color: var(--t-yellow);
+}
+
+.term .log__line--refused,
+.term .log__line--refused .log__mark {
+  color: var(--t-red);
+}
+
+.term .log__line--ok,
+.term .log__line--ok .log__mark {
+  color: var(--t-green);
+}
+
+.term .race__text {
+  margin: 2px 0 !important;
+  color: var(--t-faint);
+}
+
+.term .race__text > span {
+  position: relative;
+}
+
+.term .race__text .is-typed {
+  color: var(--t-fg);
+}
+
+/* the ghost: a faint block under the character it has reached */
+.term .race__text .is-ghost {
+  background: rgba(168, 153, 132, 0.22);
+  border-radius: 2px;
+}
+
+.term .race__caret {
+  position: absolute;
+  left: -1px;
+  top: 0.1em;
+  bottom: 0.1em;
+  border-left: 2px solid var(--t-yellow);
+}
+
+/* contact -------------------------------------------------------------------------------- */
+.t-contact {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px !important;
+}
+
+.t-btn {
+  color: #1d2021;
+  background: var(--t-yellow);
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.t-btn:hover {
+  background: var(--t-orange);
+}
+
+/* floating window -------------------------------------------------------------------------- */
+.tf {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 11, 12, 0.6);
+}
+
+.tf__win {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(86dvh, 820px);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--t-fg);
+}
+
+.tf__win .tw__title {
+  color: var(--t-yellow);
+  background: var(--t-wall);
+}
+
+.tf__close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 2;
+  color: var(--t-dim) !important;
+}
+
+.tf__close:hover,
+.tf__close:focus-visible {
+  color: var(--t-red) !important;
+  outline: none;
+}
+
+.tf__body {
+  position: relative;
+  overflow-y: auto;
+  padding: 30px 28px 24px;
+}
+
+.f-h1 {
+  color: var(--t-orange);
+  font-weight: 500;
+  font-size: 1.15em;
+  margin-bottom: 4px !important;
+  padding-right: 40px;
+}
+
+.f-h2 {
+  color: var(--t-yellow);
+  margin-top: 16px !important;
+  margin-bottom: 4px !important;
+}
+
+.f-p {
+  color: var(--t-fg);
+  margin-bottom: 8px !important;
+}
+
+.f-built {
+  margin-bottom: 8px !important;
+}
+
+.f-built__text {
+  display: block;
+  color: var(--t-dim);
+}
+
+.f-points {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.f-points li {
+  position: relative;
+  padding-left: 2ch;
+}
+
+.f-points li::before {
+  content: '-';
+  position: absolute;
+  left: 0;
+  color: var(--t-yellow);
+}
+
+/* shorter laptop screens: same tiles, tighter text */
+@media (min-width: 1001px) and (max-height: 860px) {
+  .term {
+    font-size: 12px;
+  }
+
+  .t-name {
+    font-size: 1.7rem;
+  }
+
+  .w-kitty {
+    min-height: 262px;
+  }
+
+  .tw {
+    padding: 18px 14px 10px;
+  }
+
+  .kitty {
+    inset: 18px 14px 10px;
+  }
+}
+
+/* smaller screens: windows stack and the page scrolls */
+@media (max-width: 1000px), (max-height: 640px) {
+  .tdesk {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    gap: 14px;
+    padding-top: 16px;
+  }
+
+  .tw { grid-row: auto !important; }
+
+  /* the first window grows with its text here, and scrolls once it gets long */
+  .w-kitty { min-height: 0; }
+  .kitty {
+    position: static;
+    max-height: 420px;
+  }
+  .w-kitty,
+  .w-ff,
+  .w-work { grid-column: 1 / -1; }
+  .w-workouter { grid-column: 1 / 4; }
+  .w-typeduel { grid-column: 4 / -1; }
+  .w-rore { grid-column: 1 / 4; }
+  .w-contact { grid-column: 4 / -1; }
+
+  .tbar__keys {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .tbar {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    height: auto;
+    padding: 6px 12px;
+  }
+
+  .tbar__host,
+  .tbar__clock {
+    display: none;
+  }
+
+  .tdesk {
+    grid-template-columns: 1fr;
+    padding: 16px 10px;
+  }
+
+  .w-kitty,
+  .w-ff,
+  .w-work,
+  .w-workouter,
+  .w-typeduel,
+  .w-rore,
+  .w-contact {
+    grid-column: 1 / -1;
+  }
+
+  .t-name {
+    font-size: 1.5rem;
+  }
+
+  .t-built {
+    grid-template-columns: 10ch 1fr;
+  }
+
+  .t-built > :last-child {
+    display: none;
+  }
+
+  .tw__hint {
+    display: none;
+  }
+
+  .tf {
+    padding: 8px;
+    align-items: flex-end;
+  }
+
+  .tf__body {
+    padding: 26px 16px 20px;
+  }
+}

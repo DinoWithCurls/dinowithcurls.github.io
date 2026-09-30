@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
-import DeckApp from './variants/DeckApp'
+import TerminalHome from './variants/TerminalHome'
+import { MotionProvider } from './motion/MotionProvider'
 
 export default function App() {
-  // The deck owns its own scroll container, so the page body must not scroll.
+  // The desktop owns its own scroll container, so the page body must not scroll.
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => {
@@ -10,5 +11,9 @@ export default function App() {
     }
   }, [])
 
-  return <DeckApp />
+  return (
+    <MotionProvider>
+      <TerminalHome />
+    </MotionProvider>
+  )
 }
