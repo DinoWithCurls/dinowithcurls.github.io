@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# animation test output (scripts/animation-test.mjs)
+.animation-test

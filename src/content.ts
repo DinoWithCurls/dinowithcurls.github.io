@@ -145,7 +145,18 @@ export const education: Education[] = [
   },
 ]
 
-export type LogLine = { kind: 'call' | 'warn' | 'refused' | 'ok'; text: string }
+/** One real agent run, replayed by the Workouter window (src/components/WorkouterDemo.tsx). */
+export type AgentRun = {
+  title: string
+  model: string
+  /** Groq's per-request gate: prompt tokens plus the reserved output must fit under this */
+  budget: number
+  turns: { prompt: number; reserved: number; total: number; call: string }[]
+  /** what the validator sent back after the first attempt */
+  warning: string
+  /** the accepted day: exercise, sets, reps, kg */
+  plan: [string, number, string, number][]
+}
 
 export type Project = {
   name: string
@@ -155,7 +166,7 @@ export type Project = {
   points: string[]
   link?: { label: string; href: string }
   /** A short sample run shown beside the card when the agent-log animation is on. */
-  log?: { title: string; lines: LogLine[] }
+  run?: AgentRun
   /** One line for the project's tile on the hybrid home. */
   short: string
 }
@@ -174,18 +185,33 @@ export const projects: Project[] = [
       'Go and Postgres backend where an LLM agent plans each day through tool calls, with every plan checked against training rules before it is saved.',
       'Plans scored against real training weeks, with every request kept within Groq’s 8k-token limit.',
     ],
-    // Day 1 of a real agent run (workouter-api/runs/20260929-131627-agent-w5-d1-2-3-4-5-6.json).
-    // Tokens are each request's total as Groq reported it.
-    log: {
+    // Day 1 of a real agent run (workouter-api/runs/20260929-131627-agent-w5-d1-2-3-4-5-6.json):
+    // token counts are Groq's own, the calls and the plan are what the agent submitted.
+    run: {
       title: 'real run · week 5 · day 1 · push',
-      lines: [
-        { kind: 'call', text: 'submit_day(5 exercises) · 5.6k tokens' },
+      model: 'gpt-oss-120b',
+      budget: 8000,
+      turns: [
         {
-          kind: 'warn',
-          text: 'warning: seated_chest_press has opened every push day for 2 weeks; open the day with it',
+          prompt: 4566,
+          reserved: 2500,
+          total: 5589,
+          call: 'dumbbell_bench_press, barbell_overhead_press, incline_chest_press, …',
         },
-        { kind: 'call', text: 'submit_day(opens with seated_chest_press) · 5.1k tokens' },
-        { kind: 'ok', text: 'accepted in 2 turns' },
+        {
+          prompt: 4824,
+          reserved: 2500,
+          total: 5136,
+          call: 'seated_chest_press, dumbbell_bench_press, barbell_overhead_press, …',
+        },
+      ],
+      warning: 'seated_chest_press has opened every push day for 2 weeks; open the day with it',
+      plan: [
+        ['seated chest press', 3, '10-12', 20],
+        ['dumbbell bench press', 3, '12-15', 2.5],
+        ['barbell overhead press', 3, '8-10', 5],
+        ['lateral raise', 3, '12-15', 5],
+        ['front raise', 3, '12-15', 2.5],
       ],
     },
   },

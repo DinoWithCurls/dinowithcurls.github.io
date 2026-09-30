@@ -18,9 +18,10 @@
   --t-red: #fb4934;
   --t-gap: 10px;
 
-  height: 100dvh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  /* the document scrolls (only when the windows stack); no inner scroller, so the page is one
+     paint layer and comes back in one piece when you return to the tab */
+  min-height: 100dvh;
+  overflow-x: clip;
   display: flex;
   flex-direction: column;
   background: var(--t-wall);
@@ -56,10 +57,11 @@
   z-index: 5;
   flex: none;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
   height: 30px;
+  white-space: nowrap;
   padding: 0 14px;
   background: #111314;
   border-bottom: 1px solid var(--t-line);
@@ -73,18 +75,17 @@
   gap: 10px;
 }
 
-.tbar__ws {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 18px;
-  border-radius: 4px;
-  background: var(--t-yellow);
-  color: #1d2021;
-  font-weight: 500;
+/* the focused window's title, like waybar's hyprland/window module */
+.tbar__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--t-fg);
 }
 
 .tbar__clock {
+  justify-self: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--t-fg);
 }
 
@@ -124,25 +125,22 @@
   margin: 0 auto;
   padding: var(--t-gap) 14px 14px;
   display: grid;
-  gap: var(--t-gap);
-  grid-template-columns: repeat(12, minmax(0, 1fr));
+  /* fine columns so a dragged gap moves smoothly; each window's row, span and left gap come
+     from the tiling state in TerminalHome */
+  grid-template-columns: repeat(240, minmax(0, 1fr));
   grid-template-rows: auto auto auto;
+  column-gap: 0;
+  row-gap: var(--t-gap);
   align-content: center;
 }
-
-.w-kitty { grid-column: 1 / 8; grid-row: 1; }
-.w-ff { grid-column: 8 / 13; grid-row: 1; }
-.w-work { grid-column: 1 / 5; grid-row: 2; }
-.w-workouter { grid-column: 5 / 9; grid-row: 2; }
-.w-typeduel { grid-column: 9 / 13; grid-row: 2; }
-.w-rore { grid-column: 1 / 7; grid-row: 3; }
-.w-contact { grid-column: 7 / 13; grid-row: 3; }
 
 /* windows ------------------------------------------------------------------------------- */
 .tw {
   position: relative;
   isolation: isolate;
   min-width: 0;
+  /* each window knows its own width, so its text can adapt when it is resized narrow */
+  container-type: inline-size;
   padding: 22px 16px 14px;
   outline: none;
 }
@@ -176,8 +174,71 @@
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
 }
 
+/* the title bar strip: drag it onto another window to swap the two */
+.tw__grab {
+  position: absolute;
+  top: -6px;
+  left: 0;
+  right: 0;
+  height: 26px;
+  cursor: grab;
+}
+
+/* the gap on a window's left: drag to trade width with the neighbour, double-click to even out */
+.tw__resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(-1 * var(--t-gap));
+  width: var(--t-gap);
+  z-index: 3;
+  cursor: col-resize;
+}
+
+.tw__resize::after {
+  content: '';
+  position: absolute;
+  top: 20%;
+  bottom: 20%;
+  left: calc(50% - 1px);
+  width: 2px;
+  border-radius: 2px;
+  background: var(--t-yellow);
+  opacity: 0;
+  transition: opacity 0.15s var(--ease);
+}
+
+.tw__resize:hover::after,
+.tw__resize:active::after {
+  opacity: 0.8;
+}
+
+/* the window being dragged (and while it flies home) rides above the others */
+.tw.is-lifted {
+  z-index: 30;
+}
+
+.tw.is-lifted .tw__bg {
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+}
+
+.tw.is-lifted .tw__grab {
+  cursor: grabbing;
+}
+
+/* where the dragged window will land: its own slot, drawn under it */
+.tw__slot {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border: 2px dashed var(--t-yellow);
+  background: rgba(250, 189, 47, 0.04);
+  pointer-events: none;
+}
+
 /* the pane title sits on the top border, like tmux/zellij */
 .tw__title {
+  pointer-events: none;
   position: absolute;
   top: -1px;
   left: 14px;
@@ -197,6 +258,7 @@
 }
 
 .tw__hint {
+  pointer-events: none;
   position: absolute;
   top: 6px;
   right: 12px;
@@ -226,9 +288,8 @@
 
 .t-cmdline {
   color: var(--t-fg);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* long commands wrap, like a terminal, rather than being cut off */
+  overflow-wrap: anywhere;
 }
 
 .t-out {
@@ -285,7 +346,7 @@ button.t-dir:hover {
 }
 
 .t-name {
-  font-size: 2rem;
+  font-size: clamp(1.4rem, 6.5cqi, 2rem);
   font-weight: 500;
   line-height: 1.25;
   letter-spacing: -0.02em;
@@ -321,6 +382,17 @@ button.t-dir:hover {
   padding: 1px 6px !important;
   margin: 0 -6px;
   border-radius: 4px;
+}
+
+/* a narrow kitty drops the "where" column rather than squeezing the description */
+@container (max-width: 520px) {
+  .t-built {
+    grid-template-columns: 10ch 1fr;
+  }
+
+  .t-built > :last-child {
+    display: none;
+  }
 }
 
 .t-built:hover,
@@ -435,7 +507,7 @@ button.t-dir:hover {
 /* "where I used it" shows above a tool on hover */
 .term .tag--usage {
   position: relative;
-  cursor: help;
+  cursor: default;
   text-decoration: underline dotted var(--t-faint);
   text-underline-offset: 3px;
 }
@@ -498,8 +570,9 @@ button.t-dir:hover {
 
 .t-row__top {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 12px;
+  column-gap: 12px;
 }
 
 .t-row__role {
@@ -513,9 +586,10 @@ button.t-dir:hover {
 
 .t-h {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 12px;
+  column-gap: 12px;
   font-size: 15px;
   font-weight: 500;
   color: var(--t-orange);
@@ -531,93 +605,194 @@ button.t-dir:hover {
   opacity: 0.85;
 }
 
-/* the agent log and race, printed straight into the terminal */
-.term .inset__title {
+/* Workouter: a replayed agent run (src/components/WorkouterDemo.tsx) */
+.wd {
+  container-type: inline-size;
+}
+
+.wd-meter {
+  display: flex;
+  align-items: center;
+  gap: 1ch;
+  white-space: nowrap;
+}
+
+/* the budget bar: segmented like block characters, and it takes whatever width is left */
+.wd-bar {
+  position: relative;
+  flex: 1;
+  min-width: 6ch;
+  max-width: 22ch;
+  height: 0.8em;
+  background: repeating-linear-gradient(90deg, var(--t-line-strong) 0 5px, transparent 5px 7px);
+}
+
+.wd-bar__on {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: repeating-linear-gradient(90deg, var(--t-aqua) 0 5px, transparent 5px 7px);
+  transition: width 0.12s linear;
+}
+
+/* very narrow window: drop the request label before anything else */
+@container (max-width: 330px) {
+  .wd-req {
+    display: none;
+  }
+}
+
+/* a fixed-height terminal viewport: new lines arrive at the bottom, old ones scroll off the top */
+.wd-screen {
+  height: calc(8 * 1.55em);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.wd-screen.is-scrolled {
+  mask-image: linear-gradient(to bottom, transparent, #000 1.8em);
+}
+
+.wd-title {
   color: var(--t-faint);
-  margin-bottom: 2px;
 }
 
-.term .inset__title::before {
-  content: '# ';
-}
-
-.term .inset__caption {
-  color: var(--t-dim);
-}
-
-.term .log__lines {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 1px;
-}
-
-.term .log__line {
-  display: grid;
-  grid-template-columns: 14px 1fr;
-  gap: 6px;
+.wd-call {
   color: var(--t-fg);
-  opacity: 0;
-  transform: translateY(4px);
-  transition:
-    opacity 0.3s var(--ease),
-    transform 0.3s var(--ease);
 }
 
-.term .log__line.is-shown {
-  opacity: 1;
-  transform: none;
-}
-
-.term .log__mark {
-  color: var(--t-faint);
-}
-
-.term .log__line--warn,
-.term .log__line--warn .log__mark {
+.wd-warn {
   color: var(--t-yellow);
 }
 
-.term .log__line--refused,
-.term .log__line--refused .log__mark {
-  color: var(--t-red);
-}
-
-.term .log__line--ok,
-.term .log__line--ok .log__mark {
+.wd-ok {
   color: var(--t-green);
 }
 
-.term .race__text {
-  margin: 2px 0 !important;
-  color: var(--t-faint);
+.wd-spin {
+  color: var(--t-aqua);
 }
 
-.term .race__text > span {
+/* the plan: a grid, so names can wrap while sets / reps / kg always stay visible */
+.wd-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 5ch 6ch 4ch;
+  column-gap: 1ch;
+}
+
+.wd-head {
+  margin-top: 2px !important;
+  color: var(--t-orange);
+}
+
+/* TypeDuel: a replayed live race, or race the ghost (src/components/TypeDuelDemo.tsx) */
+.td {
   position: relative;
 }
 
-.term .race__text .is-typed {
+.td-live {
+  color: var(--t-green);
+}
+
+.td-lane {
+  display: flex;
+  align-items: center;
+  gap: 1ch;
+  white-space: nowrap;
+}
+
+.td-who {
+  flex: none;
+  width: 5ch;
+  color: var(--t-dim);
+}
+
+/* a lane: segmented like block characters, taking whatever width is left */
+.td-bar {
+  position: relative;
+  flex: 1;
+  min-width: 6ch;
+  max-width: 20ch;
+  height: 0.8em;
+  background: repeating-linear-gradient(90deg, var(--t-line-strong) 0 5px, transparent 5px 7px);
+}
+
+.td-bar__on {
+  position: absolute;
+  inset: 0 auto 0 0;
+  transition: width 0.1s linear;
+}
+
+.td-bar--you {
+  background: repeating-linear-gradient(90deg, var(--t-yellow) 0 5px, transparent 5px 7px);
+}
+
+.td-bar--opp {
+  background: repeating-linear-gradient(90deg, var(--t-blue) 0 5px, transparent 5px 7px);
+}
+
+.td-wpm {
+  flex: none;
+}
+
+.td-text {
+  margin: 4px 0 2px !important;
+  color: var(--t-faint);
+}
+
+.td-text > span {
+  position: relative;
+}
+
+.td-text .is-ok {
   color: var(--t-fg);
 }
 
-/* the ghost: a faint block under the character it has reached */
-.term .race__text .is-ghost {
-  background: rgba(168, 153, 132, 0.22);
-  border-radius: 2px;
+.td-text .is-bad {
+  color: var(--t-red);
+  background: rgba(251, 73, 52, 0.12);
 }
 
-.term .race__caret {
+/* the other player's position: an underline in their colour */
+.td-text .is-opp {
+  box-shadow: inset 0 -2px 0 var(--t-blue);
+}
+
+.td-caret {
   position: absolute;
   left: -1px;
   top: 0.1em;
   bottom: 0.1em;
   border-left: 2px solid var(--t-yellow);
+  animation: t-blink 1s steps(1) infinite;
+}
+
+.td-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  min-height: 1.55em;
+}
+
+.td-play {
+  font-size: 12px;
+}
+
+/* the input that receives your typing: focusable, invisible */
+.td-input {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  border: 0;
+  padding: 0;
 }
 
 /* contact -------------------------------------------------------------------------------- */
 .t-contact {
+  overflow-wrap: anywhere;
   display: flex !important;
   flex-wrap: wrap;
   align-items: center;
@@ -625,7 +800,8 @@ button.t-dir:hover {
   margin-top: 8px !important;
 }
 
-.t-btn {
+.t-btn,
+.term button.t-btn {
   color: #1d2021;
   background: var(--t-yellow);
   padding: 2px 8px;
@@ -633,7 +809,8 @@ button.t-dir:hover {
   font-weight: 500;
 }
 
-.t-btn:hover {
+.t-btn:hover,
+.term button.t-btn:hover {
   background: var(--t-orange);
 }
 
@@ -646,6 +823,11 @@ button.t-dir:hover {
   align-items: center;
   justify-content: center;
   padding: 24px;
+}
+
+.tf__backdrop {
+  position: absolute;
+  inset: 0;
   background: rgba(10, 11, 12, 0.6);
 }
 
@@ -741,7 +923,7 @@ button.t-dir:hover {
   }
 
   .t-name {
-    font-size: 1.7rem;
+    font-size: clamp(1.3rem, 6cqi, 1.7rem);
   }
 
   .w-kitty {
@@ -760,14 +942,18 @@ button.t-dir:hover {
 /* smaller screens: windows stack and the page scrolls */
 @media (max-width: 1000px), (max-height: 640px) {
   .tdesk {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: none;
     grid-auto-rows: auto;
     gap: 14px;
     padding-top: 16px;
   }
 
-  .tw { grid-row: auto !important; }
+  .tw {
+    grid-row: auto !important;
+    grid-column: 1 / -1 !important;
+    margin-left: 0 !important;
+  }
 
   /* the first window grows with its text here, and scrolls once it gets long */
   .w-kitty { min-height: 0; }
@@ -775,14 +961,10 @@ button.t-dir:hover {
     position: static;
     max-height: 420px;
   }
-  .w-kitty,
-  .w-ff,
-  .w-work { grid-column: 1 / -1; }
-  .w-workouter { grid-column: 1 / 4; }
-  .w-typeduel { grid-column: 4 / -1; }
-  .w-rore { grid-column: 1 / 4; }
-  .w-contact { grid-column: 4 / -1; }
+}
 
+/* the key hint only shows where the bar has room for it */
+@media (max-width: 1239px) {
   .tbar__keys {
     display: none;
   }
@@ -802,18 +984,7 @@ button.t-dir:hover {
   }
 
   .tdesk {
-    grid-template-columns: 1fr;
     padding: 16px 10px;
-  }
-
-  .w-kitty,
-  .w-ff,
-  .w-work,
-  .w-workouter,
-  .w-typeduel,
-  .w-rore,
-  .w-contact {
-    grid-column: 1 / -1;
   }
 
   .t-name {
