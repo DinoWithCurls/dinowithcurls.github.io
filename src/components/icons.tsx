@@ -26,9 +26,3 @@ export const DownloadIcon = (p: P) => (
     <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
   </svg>
 )
-
-export const ArrowIcon = (p: P) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden {...p}>
-    <path d="M7 17 17 7m0 0H8m9 0v9" />
-  </svg>
-)

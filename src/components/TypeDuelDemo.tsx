@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react'
 import { useInView } from 'framer-motion'
-import { useMotion } from '../motion/features'
+import { useMotion } from '../motion/context'
 
 // TypeDuel in a terminal window, two ways:
 // - watch: a demo of a live race (scripted, not a recording). Both players type the same
@@ -219,7 +219,7 @@ export function TypeDuelDemo({ start }: { start: boolean }) {
 
   return (
     <div ref={ref} className="td" data-keep={mode === 'play' ? '' : undefined}>
-      <p className="td-status">
+      <p>
         {mode === 'watch' ? (
           <>
             <span className="t-dim">room k7q2 ·</span> <span className="td-live">●</span> 2 connected{' '}
@@ -278,7 +278,7 @@ export function TypeDuelDemo({ start }: { start: boolean }) {
                 [ again ]
               </button>
             )}
-            <button className="t-link td-quit" onClick={quit}>
+            <button className="t-link" onClick={quit}>
               back
             </button>
           </>

@@ -1,0 +1,6 @@
+dist
+old
+public
+package-lock.json
+.animation-test
+*.md

@@ -5,9 +5,9 @@ import { createContext, useEffect, useState } from 'react'
 import { type Variants } from 'framer-motion'
 import { EASE } from '../motion/boot'
 
-export const POP_START = 0.35
-export const POP_STEP = 0.11
-export const POP_DUR = 0.34
+const POP_START = 0.35
+const POP_STEP = 0.11
+const POP_DUR = 0.34
 /** When window `i` has finished popping in (seconds after load). */
 export const after = (i: number) => POP_START + i * POP_STEP + POP_DUR
 

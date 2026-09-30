@@ -79,7 +79,7 @@ export function Shell({
         return null
       case 'help':
         return (
-          <div className="t-help">
+          <div>
             {[
               ['about', 'who I am and what I’ve built'],
               ['work', 'where I’ve worked'],

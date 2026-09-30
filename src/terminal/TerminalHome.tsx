@@ -248,12 +248,12 @@ export default function TerminalHome() {
             </div>
           </Win>
 
-          <Win id="fastfetch" {...tile('fastfetch')} title={TITLES['fastfetch']} className="w-ff" {...win}>
+          <Win id="fastfetch" {...tile('fastfetch')} title={TITLES['fastfetch']} {...win}>
             <Cmd cmd="fastfetch" delay={after(1)}>
               <L className="ff-head">
                 <span className="t-accent">aditya</span>@<span className="t-accent">portfolio</span>
               </L>
-              <L className="t-dim ff-rule">────────────────</L>
+              <L className="t-dim">────────────────</L>
               {toolGroups.map((g) => (
                 <L className="ff-row" key={g.key}>
                   <span className="ff-key">{g.key}</span>
@@ -273,7 +273,7 @@ export default function TerminalHome() {
             </Cmd>
           </Win>
 
-          <Win id="work" {...tile('work')} title={TITLES['work']} className="w-work" {...win}>
+          <Win id="work" {...tile('work')} title={TITLES['work']} {...win}>
             <Cmd cmd="ls ~/work" delay={after(2)}>
               {experience.map((job) => (
                 <L key={job.company}>
@@ -298,7 +298,7 @@ export default function TerminalHome() {
             id={`project:${workouter.name}`}
             {...tile(`project:${workouter.name}`)}
             title={TITLES['project:Workouter']}
-            className="w-workouter"
+
             {...win}
             onOpen={() => open(`project:${workouter.name}`)}
           >
@@ -320,7 +320,7 @@ export default function TerminalHome() {
             id={`project:${typeduel.name}`}
             {...tile(`project:${typeduel.name}`)}
             title={TITLES['project:TypeDuel']}
-            className="w-typeduel"
+
             {...win}
             onOpen={() => open(`project:${typeduel.name}`)}
           >
@@ -336,7 +336,7 @@ export default function TerminalHome() {
             id={`project:${rore.name}`}
             {...tile(`project:${rore.name}`)}
             title={TITLES['project:Rore']}
-            className="w-rore"
+
             {...win}
             onOpen={() => open(`project:${rore.name}`)}
           >
@@ -350,7 +350,7 @@ export default function TerminalHome() {
             </motion.div>
           </Win>
 
-          <Win id="contact" {...tile('contact')} title={TITLES['contact']} className="w-contact" {...win}>
+          <Win id="contact" {...tile('contact')} title={TITLES['contact']} {...win}>
             <Cmd cmd="cat contact" delay={after(6)}>
               <L>Open to mid-level full-stack roles. Email is fastest.</L>
               <L className="t-contact">

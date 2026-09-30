@@ -11,12 +11,12 @@ import {
   type ReactNode,
 } from 'react'
 import { animate, motion, useMotionValue, useTransform, type MotionValue } from 'framer-motion'
-import { useMotion } from '../motion/features'
+import { useMotion } from '../motion/context'
 import { RADIUS, FLIGHT } from './shared'
 import { BOOT_ORDER } from './tiling'
 import { popIn } from './timing'
 
-export type Place = {
+type Place = {
   row: number
   start: number
   span: number
@@ -51,7 +51,7 @@ export function Win({
 }: {
   id: string
   title: string
-  className: string
+  className?: string
   active: string | null
   onActive: (id: string) => void
   onOpen?: () => void
@@ -160,7 +160,7 @@ export function Win({
       ref={ref}
       data-win={id}
       tabIndex={0}
-      className={`tw ${className}${onOpen ? ' tw--opens' : ''}${active === id ? ' is-active' : ''}${
+      className={`tw${className ? ` ${className}` : ''}${onOpen ? ' tw--opens' : ''}${active === id ? ' is-active' : ''}${
         lifted ? ' is-lifted' : ''
       }`}
       custom={BOOT_ORDER.indexOf(id)}

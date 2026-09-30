@@ -1,4 +1,4 @@
-/* Terminal desktop (src/variants/TerminalHome.tsx): a tiling WM of terminal windows, Gruvbox dark. */
+/* Terminal desktop (src/terminal/): a tiling WM of terminal windows, Gruvbox dark. */
 
 .term {
   --t-wall: #151718;
@@ -468,14 +468,30 @@ button.t-dir:hover {
   height: 12px;
 }
 
-.ff-c0 { background: #282828; }
-.ff-c1 { background: var(--t-red); }
-.ff-c2 { background: var(--t-green); }
-.ff-c3 { background: var(--t-yellow); }
-.ff-c4 { background: var(--t-blue); }
-.ff-c5 { background: var(--t-purple); }
-.ff-c6 { background: var(--t-aqua); }
-.ff-c7 { background: var(--t-fg); }
+.ff-c0 {
+  background: #282828;
+}
+.ff-c1 {
+  background: var(--t-red);
+}
+.ff-c2 {
+  background: var(--t-green);
+}
+.ff-c3 {
+  background: var(--t-yellow);
+}
+.ff-c4 {
+  background: var(--t-blue);
+}
+.ff-c5 {
+  background: var(--t-purple);
+}
+.ff-c6 {
+  background: var(--t-aqua);
+}
+.ff-c7 {
+  background: var(--t-fg);
+}
 
 .ff-note {
   margin-top: 6px !important;
@@ -956,7 +972,9 @@ button.t-dir:hover {
   }
 
   /* the first window grows with its text here, and scrolls once it gets long */
-  .w-kitty { min-height: 0; }
+  .w-kitty {
+    min-height: 0;
+  }
   .kitty {
     position: static;
     max-height: 420px;

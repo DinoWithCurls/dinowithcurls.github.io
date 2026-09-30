@@ -5,8 +5,6 @@
 
 export const profile = {
   name: 'Aditya Raj Singh',
-  tagline:
-    'Full-stack engineer who builds web products end to end - frontend, APIs, and the data layer underneath.',
   location: 'Hyderabad, India',
   email: 'adityarajsingh64@gmail.com',
   github: 'https://github.com/DinoWithCurls',
@@ -64,7 +62,7 @@ export const toolGroups: { key: string; tools: string[] }[] = [
   { key: 'ai tools', tools: ['Claude Code', 'Cursor', 'Antigravity'] },
 ]
 
-export type Experience = {
+type Experience = {
   role: string
   company: string
   period: string
@@ -102,7 +100,7 @@ export const experience: Experience[] = [
       'Brought dashboard load times from 5 seconds down to 0.7, while tightening up security.',
       'Built the enrollment and retention flows that onboarded 1,500+ new agents.',
     ],
-    stack: ['Django', 'Django REST Framework', 'React Native', 'JavaScript', 'SASS', 'PHP'],
+    stack: ['Django', 'Django REST Framework', 'React Native', 'JavaScript', 'SASS', 'PHP', 'MySQL'],
   },
   {
     role: 'Full Stack Developer Intern',
@@ -127,10 +125,9 @@ export const experience: Experience[] = [
   },
 ]
 
-export type Education = {
+type Education = {
   school: string
   degree: string
-  field: string
   period: string
   location: string
 }
@@ -139,7 +136,6 @@ export const education: Education[] = [
   {
     school: 'RCC Institute of Information Technology',
     degree: 'BTech, Computer Science & Engineering',
-    field: '',
     period: 'Aug 2018 – Jun 2022',
     location: 'Kolkata, India',
   },
@@ -158,16 +154,16 @@ export type AgentRun = {
   plan: [string, number, string, number][]
 }
 
-export type Project = {
+type Project = {
   name: string
   stack: string[]
   period: string
   blurb: string
   points: string[]
   link?: { label: string; href: string }
-  /** A short sample run shown beside the card when the agent-log animation is on. */
+  /** A real agent run, replayed in the project's window (see WorkouterDemo). */
   run?: AgentRun
-  /** One line for the project's tile on the hybrid home. */
+  /** One line under the project's name in its window: what it does, for someone who won't click. */
   short: string
 }
 
@@ -176,7 +172,7 @@ export const projects: Project[] = [
     name: 'Workouter',
     short:
       'Plans gym workouts with an LLM agent: a Go backend picks each day’s exercises, sets and weights, and rejects any plan that breaks training or injury rules.',
-    stack: ['React Native', 'Expo', 'TypeScript', 'Go', 'PostgreSQL', 'Docker', 'Groq'],
+    stack: ['React Native', 'Expo', 'TypeScript', 'Go', 'PostgreSQL', 'Docker', 'GitHub Actions', 'Groq'],
     period: 'Jul 2026 – Present',
     blurb:
       'A gym-training system in two parts, being wired together: a Go backend where an LLM agent plans each training day, and an Android app for logging every set.',
@@ -242,5 +238,4 @@ export const projects: Project[] = [
 ]
 
 /** One line for "outside work" in the About window. */
-export const outsideWork =
-  'Manga and anime, multiplayer games with friends, and keeping an eye on new web frameworks.'
+export const outsideWork = 'Manga and anime, multiplayer games with friends, and keeping an eye on new web frameworks.'

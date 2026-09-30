@@ -36,8 +36,12 @@ npm install
 npm run dev              # dev server on http://localhost:5173
 npm run build            # typecheck + production build to dist/
 npm run lint
+npm run format           # Prettier, with the repo's style in .prettierrc.json
 npm run test:animations  # with the dev server running; see "Testing the animation" below
 ```
+
+Node 22 or newer (CI uses 24). Every pull request runs `.github/workflows/ci.yml`: lint,
+`format:check` and the build, so style and type errors can't drift in unnoticed.
 
 ## Where things are
 
@@ -59,7 +63,7 @@ src/
     WorkouterDemo.tsx        replay of a real agent run
     TypeDuelDemo.tsx         replayed race, and a race you can play
     Tag.tsx, icons.tsx       tool names with their icons, link icons
-  motion/                    follows the OS Reduce Motion setting
+  motion/                    follows the OS Reduce Motion setting (context.ts), shared easing
   styles/terminal.css        everything visual
 scripts/animation-test.mjs   the animation test
 ```

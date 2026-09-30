@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { profile } from '../content'
 import { DownloadIcon, GithubIcon, LinkedinIcon, MailIcon } from '../components/icons'
 import { EASE } from '../motion/boot'
-import { useMotion } from '../motion/features'
+import { useMotion } from '../motion/context'
 
 function useClock() {
   const fmt = () =>

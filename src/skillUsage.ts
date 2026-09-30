@@ -3,7 +3,6 @@ import { experience, projects } from './content'
 // Skill labels that are written differently from the stack labels they cover.
 const ALIASES: Record<string, string[]> = {
   Python: ['Python', 'Django', 'Django REST Framework'],
-  'SQL (MySQL, Postgres)': ['PostgreSQL'],
   'HTML/CSS': ['HTML/CSS', 'SASS'],
   'Node.js / Express': ['Node.js', 'Express'],
   Django: ['Django', 'Django REST Framework'],

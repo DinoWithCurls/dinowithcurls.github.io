@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore, type ReactNode } from 'react'
 import { MotionConfig } from 'framer-motion'
-import { MotionContext } from './features'
+import { MotionContext } from './context'
 
 const QUERY = '(prefers-reduced-motion: reduce)'
 

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useInView } from 'framer-motion'
-import { useMotion } from '../motion/features'
+import { useMotion } from '../motion/context'
 import type { AgentRun } from '../content'
 
 // A replay of one real agent run, as it would scroll past in a terminal: the token budget
@@ -149,7 +149,7 @@ export function WorkouterDemo({ run, start }: { run: AgentRun; start: boolean })
         </span>
         {m ? (
           <>
-            <span className="wd-num">
+            <span>
               {k(m.used)}/{k(run.budget)}
             </span>
             <span className="t-dim wd-req">req {m.turn + 1}</span>

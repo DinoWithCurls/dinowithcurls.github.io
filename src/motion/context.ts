@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react'
 
 /** Whether to skip movement: follows the OS Reduce Motion setting. */
-export type MotionState = { reduce: boolean }
+type MotionState = { reduce: boolean }
 
 export const MotionContext = createContext<MotionState | null>(null)
 

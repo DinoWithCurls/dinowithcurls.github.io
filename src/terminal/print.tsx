@@ -2,7 +2,7 @@
 // output fades in line by line.
 import { useContext, useEffect, useRef, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { useMotion } from '../motion/features'
+import { useMotion } from '../motion/context'
 import { printOut, line, BootContext, useTyped } from './timing'
 
 /** One printed line; it fades in with its block's stagger. */
