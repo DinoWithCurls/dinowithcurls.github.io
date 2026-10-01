@@ -843,6 +843,7 @@ button.t-dir:hover {
 
 .tf__backdrop {
   position: absolute;
+  touch-action: none;
   inset: 0;
   background: rgba(10, 11, 12, 0.6);
 }
@@ -881,6 +882,7 @@ button.t-dir:hover {
 .tf__body {
   position: relative;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 30px 28px 24px;
 }
 

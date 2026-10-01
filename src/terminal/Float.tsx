@@ -125,6 +125,21 @@ export function Float({ id, onClose }: { id: string; onClose: () => void }) {
   const height = useMotionValue(0)
   const [grown, setGrown] = useState(false)
 
+  // keep the page behind from scrolling (iOS Safari ignores overflow: hidden on body): pin the
+  // body where it is, and put the scroll position back once the window has gone
+  useLayoutEffect(() => {
+    const y = window.scrollY
+    const s = document.body.style
+    s.position = 'fixed'
+    s.top = `-${y}px`
+    s.left = '0'
+    s.right = '0'
+    return () => {
+      s.position = s.top = s.left = s.right = ''
+      window.scrollTo(0, y)
+    }
+  }, [])
+
   useEffect(() => {
     closeRef.current?.focus()
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
