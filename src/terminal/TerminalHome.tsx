@@ -269,7 +269,7 @@ export default function TerminalHome() {
                   <span key={i} className={`ff-c ff-c${i}`} />
                 ))}
               </L>
-              <L className="t-dim ff-note"># hover a tool to see where I used it</L>
+              <L className="t-dim ff-note"># hover on a tool to see where I used it</L>
             </Cmd>
           </Win>
 
@@ -352,7 +352,7 @@ export default function TerminalHome() {
 
           <Win id="contact" {...tile('contact')} title={TITLES['contact']} {...win}>
             <Cmd cmd="cat contact" delay={after(6)}>
-              <L>Open to mid-level full-stack roles. Email is fastest.</L>
+              <L>Open to full-stack or frontend roles. Email is fastest.</L>
               <L className="t-contact">
                 <a className="t-btn" href={`mailto:${profile.email}`}>
                   [ email me ]
