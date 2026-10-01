@@ -1,0 +1,78 @@
+<!doctype html>
+<!--
+  Source for public/og-image.png, the link preview (LinkedIn, Slack, WhatsApp...).
+  Regenerate after editing:
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless \
+    --hide-scrollbars --window-size=1200,630 --screenshot=public/og-image.png scripts/og-image.html
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        background: #1d2021;
+        overflow: hidden;
+      }
+      body {
+        box-sizing: border-box;
+        padding: 96px 104px;
+        font-family: 'JetBrains Mono', Menlo, monospace;
+        color: #ebdbb2;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .prompt {
+        font-size: 30px;
+        color: #a89984;
+      }
+      .prompt b {
+        color: #fabd2f;
+        font-weight: 500;
+      }
+      h1 {
+        margin: 28px 0 20px;
+        font-size: 76px;
+        font-weight: 500;
+        letter-spacing: -1px;
+      }
+      .line {
+        font-size: 32px;
+        color: #bdae93;
+      }
+      .url {
+        font-size: 28px;
+        color: #fabd2f;
+      }
+      .bar {
+        display: flex;
+        gap: 0;
+        margin-top: 18px;
+      }
+      .bar span {
+        width: 56px;
+        height: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="prompt"><b>❯</b> whoami</div>
+      <h1>Aditya Raj Singh</h1>
+      <div class="line">Full-stack engineer · Hyderabad, India</div>
+    </div>
+    <div>
+      <div class="url">dinowithcurls.github.io</div>
+      <div class="bar">
+        <span style="background: #cc241d"></span><span style="background: #98971a"></span>
+        <span style="background: #d79921"></span><span style="background: #458588"></span>
+        <span style="background: #b16286"></span><span style="background: #689d6a"></span>
+      </div>
+    </div>
+  </body>
+</html>
