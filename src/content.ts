@@ -13,12 +13,12 @@ export const profile = {
 }
 
 export const about: string[] = [
-  'I’m a full-stack engineer with about four years of experience, most recently at PulseGen and before that at Holidify.',
+  'I’m a full-stack engineer with 4 years of experience, most recently at PulseGen and before that at Holidify.',
   'Most of my work has been product features people use every day, and making them hold up: fast when the data gets big, strict about who can see what, and still working when a request fails or a stream breaks.',
 ]
 
 /** The hero's one line under the name. It doesn't list features; `built` does that. */
-export const heroLine = 'Full-stack engineer · ~4 years · Hyderabad, India'
+export const heroLine = 'Full-stack engineer · 4 years · Hyderabad, India'
 
 /** The few things worth asking about, shown as `cat built.md` and in the About window. */
 export const built: { key: string; where: string; short: string; long: string; open: string }[] = [
@@ -226,10 +226,10 @@ export const projects: Project[] = [
   },
   {
     name: 'Rore',
-    short: 'An AI agent that tailors onboarding plans to each new hire.',
+    short: 'An AI product that tailors onboarding plans to each new hire.',
     stack: ['Next.js', 'ShadCN', 'OpenAI'],
     period: 'Dec 2024 – Mar 2025',
-    blurb: 'An AI agent that tailors employee onboarding plans to each new hire.',
+    blurb: 'An AI product that tailors employee onboarding plans to each new hire.',
     points: [
       'Generates onboarding plans from individual information - setup, training and knowledge transfer.',
       'Standardises and improves the onboarding experience across a team.',

@@ -132,7 +132,7 @@ export function Shell({
     if (file === 'contact')
       return (
         <div>
-          <p>Open to mid-level full-stack roles. Email is fastest.</p>
+          <p>Open to full-stack or frontend roles. Email is fastest.</p>
           <p className="t-dim">{profile.email}</p>
         </div>
       )
