@@ -3,8 +3,9 @@ import { useInView } from 'framer-motion'
 import { useMotion } from '../motion/context'
 import type { AgentRun } from '../content'
 
-// A replay of one real agent run, as it would scroll past in a terminal: the token budget
-// fills for each request, a spinner waits on the model, the tool call streams in, the
+// A replay of one real agent run, as it would scroll past in a terminal: the meter fills with
+// what each request reserves against Groq's limit (the prompt plus room held for the reply),
+// the call lines show what each call actually used, a spinner waits on the model, the tool call streams in, the
 // validator pushes back, the second attempt is accepted and the planned day prints as a table.
 // It loops while on screen; under reduced motion it shows the finished run.
 
@@ -28,9 +29,9 @@ function table(run: AgentRun): Line[] {
 function finished(run: AgentRun): Line[] {
   const [a, b] = run.turns
   return [
-    { kind: 'call', text: `→ submit_day(${a.call}) · ${k(a.total)} tokens` },
+    { kind: 'call', text: `→ submit_day(${a.call}) · ${k(a.total)} used` },
     { kind: 'warn', text: `! ${run.warning}` },
-    { kind: 'call', text: `→ submit_day(${b.call}) · ${k(b.total)} tokens` },
+    { kind: 'call', text: `→ submit_day(${b.call}) · ${k(b.total)} used` },
     { kind: 'ok', text: `✓ accepted in ${run.turns.length} turns · day saved` },
     ...table(run),
   ]
@@ -89,13 +90,13 @@ export function WorkouterDemo({ run, start }: { run: AgentRun; start: boolean })
         const [a, b] = run.turns
         await fill(0)
         await think(`${run.model} · planning day 1`, 1400)
-        await stream(`→ submit_day(${a.call})`, ` · ${k(a.total)} tokens`)
+        await stream(`→ submit_day(${a.call})`, ` · ${k(a.total)} used`)
         await sleep(450)
         push({ kind: 'warn', text: `! ${run.warning}` })
         await sleep(1100)
         await fill(1)
         await think(`${run.model} · revising`, 900)
-        await stream(`→ submit_day(${b.call})`, ` · ${k(b.total)} tokens`)
+        await stream(`→ submit_day(${b.call})`, ` · ${k(b.total)} used`)
         await sleep(400)
         push({
           kind: 'ok',
@@ -140,9 +141,9 @@ export function WorkouterDemo({ run, start }: { run: AgentRun; start: boolean })
     <div ref={ref} className="wd">
       <p
         className="wd-meter"
-        aria-label={m ? `request ${m.turn + 1}: ${k(m.used)} of ${k(run.budget)} tokens` : undefined}
+        aria-label={m ? `request ${m.turn + 1}: ${k(m.used)} of ${k(run.budget)} tokens reserved` : undefined}
       >
-        <span className="t-dim">budget</span>
+        <span className="t-dim">reserved</span>
         {/* a bar that takes whatever width is left, so the numbers never get cut */}
         <span className="wd-bar" aria-hidden>
           <span className="wd-bar__on" style={{ width: `${m ? (m.used / run.budget) * 100 : 0}%` }} />
