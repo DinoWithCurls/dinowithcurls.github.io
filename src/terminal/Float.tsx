@@ -25,6 +25,18 @@ function Stack({ items }: { items: string[] }) {
   )
 }
 
+function Points({ items }: { items: string[] }) {
+  return (
+    <ul className="f-points">
+      {items.map((p) => (
+        <motion.li key={p.slice(0, 24)} variants={line}>
+          {p}
+        </motion.li>
+      ))}
+    </ul>
+  )
+}
+
 function FloatBody({ id }: { id: string }) {
   if (id === 'about') {
     return (
@@ -66,13 +78,24 @@ function FloatBody({ id }: { id: string }) {
         <L className="t-dim">
           <span className="t-date">{job.period}</span> · {job.location}
         </L>
-        <ul className="f-points">
-          {job.points.map((p) => (
-            <motion.li key={p.slice(0, 24)} variants={line}>
-              {p}
-            </motion.li>
-          ))}
-        </ul>
+        {job.intro && <L className="f-p">{job.intro}</L>}
+        {job.sections ? (
+          job.sections.map((sec) => (
+            <div key={sec.title}>
+              <L className="f-h2">## {sec.title}</L>
+              <Points items={sec.points} />
+              {sec.tools && (
+                <L className="tags">
+                  {sec.tools.map((t) => (
+                    <Tag name={t} key={t} />
+                  ))}
+                </L>
+              )}
+            </div>
+          ))
+        ) : (
+          <Points items={job.points ?? []} />
+        )}
         <Stack items={job.stack} />
       </>
     )
