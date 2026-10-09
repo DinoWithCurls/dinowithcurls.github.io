@@ -9,12 +9,14 @@ import {
   siGit,
   siHtml5,
   siJavascript,
+  siJira,
   siMongodb,
   siNextdotjs,
   siNodedotjs,
   siPhp,
   siPostgresql,
   siMysql,
+  siLinear,
   siPython,
   siReact,
   siReactquery,
@@ -42,8 +44,8 @@ const ANTIGRAVITY = extra(
 )
 
 // Map a tech label (as written in content.ts) to a monochrome brand glyph.
-// Labels with no entry simply render as text (Zustand, PL/SQL, Informatica have no clean
-// single-colour glyph) — that's intentional and fine.
+// Labels with no entry simply render as text (Zustand, PL/SQL, Informatica, Azure DevOps have no
+// clean single-colour glyph) — that's intentional and fine.
 const ICONS: Record<string, SimpleIcon> = {
   React: siReact,
   'React Native': siReact,
@@ -74,6 +76,9 @@ const ICONS: Record<string, SimpleIcon> = {
   Groq: GROQ,
   OpenAI: OPENAI,
   Antigravity: ANTIGRAVITY,
+  Jira: siJira,
+  'Jira Product Discovery': siJira,
+  Linear: siLinear,
 }
 
 /** A tech label with its glyph. `usage`, when given, shows as a small note on hover. */

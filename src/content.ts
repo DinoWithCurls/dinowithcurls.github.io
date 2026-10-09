@@ -1,7 +1,9 @@
-// Single source of copy for the site. Kept in sync with ~/Documents/career/cv.md.
+// Single source of copy for the site. Facts match ~/Documents/career/cv.md, but the site keeps
+// more detail than the one-page CV (the PulseGen role in particular).
 // Public framing rules: plain product words (roadmaps, backlogs,
 // feedback insights), "customers" (never tenant/user counts); integrations = frontend only;
-// Copilot = frontend only. Kanban virtualisation is claimable (confirmed 2026-09-29).
+// Copilot = frontend only; notifications = his parts only (a multi-dev project).
+// Kanban virtualisation is claimable (confirmed 2026-09-29).
 
 export const profile = {
   name: 'Aditya Raj Singh',
@@ -33,7 +35,7 @@ export const built: { key: string; where: string; short: string; long: string; o
     key: 'cmd+k',
     where: 'PulseGen',
     short: 'one search across the whole product',
-    long: 'Global search in a Cmd+K palette across work items, insights, tickets and customers, scoped to what each person can access, with relevance ranking.',
+    long: 'Global search in a Cmd+K palette across 7 collections (work items, insights and five kinds of tickets), scoped to what each person can access, with results in under 2 seconds.',
     open: 'role:PulseGen',
   },
   {
@@ -62,12 +64,19 @@ export const toolGroups: { key: string; tools: string[] }[] = [
   { key: 'ai tools', tools: ['Claude Code', 'Cursor', 'Antigravity'] },
 ]
 
+/** A titled group of points in a role window; `tools` show as glyph tags under it. */
+type Section = { title: string; points: string[]; tools?: string[] }
+
 type Experience = {
   role: string
   company: string
   period: string
   location: string
-  points: string[]
+  /** One paragraph on the company and the job, shown above the points. */
+  intro?: string
+  /** A role has either flat `points` or titled `sections`. */
+  points?: string[]
+  sections?: Section[]
   stack: string[]
 }
 
@@ -77,16 +86,62 @@ export const experience: Experience[] = [
     company: 'PulseGen',
     period: 'Dec 2025 – Sep 2026',
     location: 'Hyderabad, India',
-    points: [
-      'Shipped core product surfaces end to end - roadmaps and backlogs, a survey builder, feedback insights and onboarding tours - and built the frontend of the AI Copilot.',
-      'Built the Copilot’s streaming chat: parsing the streamed response, recovering from malformed or interrupted streams, telling timeouts apart from errors, preventing duplicate sends on retry, and showing citations that respect each viewer’s access.',
-      'Redesigned the search API’s indexing and queries for fuzzy and exact matching, bringing response times from 30+ seconds to under one.',
-      'Built global search end to end: a Cmd+K palette across work items, insights, tickets and customers, with per-entity access scoping and Atlas Search relevance ranking.',
-      'Cut roadmap and backlog API response times from 40–50 seconds to under five by trimming payloads.',
-      'Rebuilt the kanban board with virtualised rendering and drag-and-drop that stays fast as boards grow, taking drag on large boards from ~7 to 60fps.',
-      'Built the notifications engine end to end - in-app and email, with cron-batched digests and subscription handling.',
-      'Built the portal’s embeddable widget flow and passwordless magic-link login, and patched an XSS vulnerability in rendered content.',
-      'Onboarded and mentored a new full-stack hire through codebase walkthroughs, PR reviews and task breakdowns.',
+    intro:
+      'PulseGen is a product-management platform: it gathers customer feedback, groups it into insights with AI, and helps product teams plan roadmaps and backlogs. I reported to the CTO and worked across the React frontend, the Node services, and the shared library that holds the data models and access rules.',
+    sections: [
+      {
+        title: 'ai copilot',
+        points: [
+          'Owned the frontend of the AI Copilot, a streaming chat over the product’s data. The AI services behind it were another team’s.',
+          'Parsed the streamed response and recovered from malformed or interrupted streams, told timeouts apart from errors, and stopped a retry from sending the same message twice.',
+          'Showed citations only when the viewer can open what they point to, and added a polling fallback for long threads, thread export, and a PRD mode that draws Mermaid diagrams.',
+        ],
+      },
+      {
+        title: 'search and speed',
+        points: [
+          'Owned global search: a Cmd+K palette over 7 collections (work items, insights and five kinds of tickets), filtered by what each person can access, with results in under 2 seconds.',
+          'Redesigned the insights search API’s indexing and queries for fuzzy and exact matching, bringing responses from 30+ seconds to under one.',
+          'Cut roadmap and backlog API times from 40–50 seconds to under five by trimming what each response carries.',
+          'Rebuilt the kanban board with virtualised rendering and a drag-and-drop that re-renders only the cells a drag touches, so dragging on large boards went from ~7 to 60fps.',
+        ],
+      },
+      {
+        title: 'access control',
+        points: [
+          'Built the module and submodule access model: shared utilities in the common library that the API and the AI team both used, view-only modes across tables, boards and modals, and checks at the query layer, not just in the UI.',
+        ],
+      },
+      {
+        title: 'integrations',
+        points: [
+          'Built the frontend for PulseGen’s Jira, Jira Product Discovery, Linear and Azure DevOps integrations: connecting an account, choosing what syncs, mapping fields and assignees, linking items, and pushing updates back.',
+        ],
+        tools: ['Jira', 'Jira Product Discovery', 'Linear', 'Azure DevOps'],
+      },
+      {
+        title: 'product',
+        points: [
+          'Shipped roadmaps and backlogs, a survey builder, feedback insights and onboarding tours, all used daily by customers.',
+          'Led the move from the old task modal to a full feature page, with tabs for the overview, discussions, AI output, sub-items and linked insights.',
+          'Built the email digests, cron batching and subscribe flows for the notifications system, as one of the engineers on it.',
+          'Set up Mixpanel event tracking across the app.',
+        ],
+      },
+      {
+        title: 'security',
+        points: [
+          'Built passwordless magic-link login to replace passwords, and the customer portal’s embeddable widget, which only loads on approved sites.',
+          'Fixed XSS in file previews and rendered markdown, removed SVG from allowed uploads, and narrowed CORS.',
+        ],
+      },
+      {
+        title: 'team',
+        points: [
+          'Spent the first two months fixing bugs across the product before moving on to new features.',
+          'Onboarded and mentored a new full-stack hire through codebase walkthroughs, PR reviews and task breakdowns.',
+        ],
+      },
     ],
     stack: ['React', 'TypeScript', 'Zustand', 'TanStack Query', 'ShadCN', 'Node.js', 'MongoDB'],
   },
@@ -175,11 +230,12 @@ export const projects: Project[] = [
     stack: ['React Native', 'Expo', 'TypeScript', 'Go', 'PostgreSQL', 'Docker', 'GitHub Actions', 'Groq'],
     period: 'Jul 2026 – Present',
     blurb:
-      'A gym-training system in two parts, being wired together: a Go backend where an LLM agent plans each training day, and an Android app for logging every set.',
+      'A gym-training system in two parts: a Go backend where an LLM agent plans each training day, and an Android app for logging every set.',
     points: [
-      'Expo Android app that works without a signal in the gym, with sets pre-filled from the plan so logging a set takes one tap.',
-      'Go and Postgres backend where an LLM agent plans each day through tool calls, with every plan checked against training rules before it is saved.',
-      'Plans scored against real training weeks, with every request kept within Groq’s 8k-token limit.',
+      'Offline Android app (Expo) that shows the week’s plan, logs a set in one tap, and syncs to the server.',
+      'Go and Postgres backend where an LLM agent plans each gym day from past training, and a rule checker sends back any plan with weights the gym doesn’t have, oversized jumps, or moves an injury rules out.',
+      'A typical day takes one model call of about 5.5k tokens, inside Groq’s 8k limit.',
+      'An eval that measures how consistent the plans are from run to run, and how closely they match weeks actually trained.',
     ],
     // Day 1 of a real agent run (workouter-api/runs/20260929-131627-agent-w5-d1-2-3-4-5-6.json):
     // token counts are Groq's own, the calls and the plan are what the agent submitted.
